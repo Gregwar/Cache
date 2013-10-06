@@ -66,6 +66,9 @@ class GarbageCollect
 
     /**
      * Drops a file or an empty directory
+     *
+     * @param $file the file to be removed
+     * @param $verbose the verbosity
      */
     public static function drop($file, $verbose = false)
     {

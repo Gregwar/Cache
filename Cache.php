@@ -15,6 +15,11 @@ class Cache
     protected $cacheDirectory;
 
     /**
+     * Use a different directory as actual cache
+     */
+    protected $actualCacheDirectory = null;
+
+    /**
      * Prefix directories size
      *
      * For instance, if the file is helloworld.txt and the prefix size is
@@ -28,7 +33,7 @@ class Cache
     /**
      * Constructs the cache system
      */
-    public function __construct($cacheDirectory = 'cache/')
+    public function __construct($cacheDirectory = 'cache')
     {
 	$this->cacheDirectory = $cacheDirectory;
     }
@@ -56,13 +61,33 @@ class Cache
     }
 
     /**
+     * Sets the actual cache directory
+     */
+    public function setActualCacheDirectory($actualCacheDirectory = null)
+    {
+        $this->actualCacheDirectory = $actualCacheDirectory;
+
+        return $this;
+    }
+
+    /**
+     * Returns the actual cache directory
+     */
+    public function getActualCacheDirectory()
+    {
+        return $this->actualCacheDirectory ?: $this->cacheDirectory;
+    }
+
+    /**
      * Change the prefix size
      *
      * @param $prefixSize the size of the prefix directories
      */
     public function setPrefixSize($prefixSize)
     {
-	$this->prefixSize = $prefixsize;
+        $this->prefixSize = $prefixSize;
+
+        return $this;
     }
 
     /**
@@ -72,20 +97,22 @@ class Cache
      */
     protected function mkdir($directory)
     {
-	mkdir($directory, 0755, true);
+        if (!is_dir($directory)) {
+            @mkdir($directory, 0755, true);
+        }
     }
 
     /**
      * Gets the cache file name
      *
      * @param $filename, the name of the cache file
+     * @param $actual get the actual file or the public file
      * @param $mkdir, a boolean to enable/disable the construction of the
      *        cache file directory
      */
-    public function getCacheFile($filename, $mkdir = false)
+    public function getCacheFile($filename, $actual = false, $mkdir = false)
     {
 	$path = array();
-	$path[] = $this->cacheDirectory;
 
 	// Getting the length of the filename before the extension
 	$parts = explode('.', $filename);
@@ -94,16 +121,21 @@ class Cache
 	for ($i=0; $i<min($len, $this->prefixSize); $i++) {
 	    $path[] = $filename[$i];
 
-	}
+        }
 	$path = implode('/', $path);
 
-	if ($mkdir && !is_dir($path)) {
-	    mkdir($path, 0755, true);
+        $actualDir = $this->getActualCacheDirectory() . '/' . $path;
+        if ($mkdir && !is_dir($actualDir)) {
+	    mkdir($actualDir, 0755, true);
 	}
 
 	$path .= '/' . $filename;
 
-	return implode('/', $path);
+        if ($actual) {
+            return $this->getActualCacheDirectory() . '/' . $path;
+        } else {
+            return $this->getCacheDirectory() . '/' . $path;
+        }
     }
 
     /**
@@ -122,12 +154,19 @@ class Cache
 	foreach ($conditions as $type => $value) {
 	    switch ($type) {
 	    case 'maxage':
-	    case 'max-age':
+            case 'max-age':
 		// Return false if the file is older than $value
+                $age = filectime($cacheFile) - time();
+                if ($age > $value) {
+                    return false;
+                }
 		break;
 	    case 'younger-than':
-	    case 'youngerthan':
-		// Return false if the file is older than the file $value
+            case 'youngerthan':
+                // Return false if the file is older than the file $value
+                if (!file_exists($value) || filectime($cacheFile) < filectime($value)) {
+                    return false;
+                }
 		break;
 	    default:
 		throw new \Exception('Cache condition '.$type.' not supported');
@@ -146,9 +185,17 @@ class Cache
      */
     public function exists($filename, array $conditions = array())
     {
-	$cacheFile = $this->getCacheFile($filename);
+        $cacheFile = $this->getCacheFile($filename, true);
 
 	return $this->checkConditions($cacheFile, $conditions);
+    }
+
+    /**
+     * Alias for exists
+     */
+    public function check($filename, array $conditions = array())
+    {
+        return $this->exists($filename, $conditions);
     }
 
     /**
@@ -156,9 +203,11 @@ class Cache
      */
     public function write($filename, $contents = '')
     {
-	$cacheFile = $this->getCacheFile($filename, true);
+	$cacheFile = $this->getCacheFile($filename, true, true);
 
-	file_put_contents($cacheFile, $contents);
+        file_put_contents($cacheFile, $contents);
+
+        return $this;
     }
 
     /**
@@ -167,9 +216,38 @@ class Cache
     public function get($filename, array $conditions = array())
     {
 	if ($this->exists($filename, $conditions)) {
-	    return file_get_contents($this->getCacheFile($filename));
+	    return file_get_contents($this->getCacheFile($filename, true));
 	} else {
 	    return null;
 	}
+    }
+
+    /**
+     * Get or create the cache entry
+     *
+     * @param $filename the cache file name
+     * @param $conditions an array of conditions about expiration
+     * @param $function the closure to call if the file does not exists
+     * @param $file returns the cache file or the file contents
+     */
+    public function getOrCreate($filename, array $conditions = array(), $function, $file = false)
+    {
+        $cacheFile = $this->getCacheFile($filename, true, true);
+        $data = null;
+
+        if ($this->check($filename, $conditions)) {
+            $data = file_get_contents($cacheFile);
+        } else {
+            $data = $function($cacheFile);
+
+            // Test if the closure wrote the file or if it returned the data
+            if (!$this->check($filename, $conditions)) {
+                $this->write($filename, $data);
+            } else {
+                $data = file_get_contents($cacheFile);
+            }
+        }
+
+        return $file ? $this->getCacheFile($filename) : $data;
     }
 }
