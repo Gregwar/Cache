@@ -88,7 +88,7 @@ You can use the following methods:
 * `get($filename, $conditions = array())`: if the cache file for `$filename` exists, contents will be
   returned, else, `NULL` will be returned.
 * `setPrefixSize($prefixSize)`: sets the prefix size for directories, default is 5. For instance, the
-  cache file for `helloworld.txt', will be `'h/e/l/l/o/helloworld.txt`.
+  cache file for `helloworld.txt`, will be `'h/e/l/l/o/helloworld.txt`.
 * `getOrCreate($filename, $conditions = array(), $function, $file = false)`: this will check if the `$filename`
   cache file exists and verifies `$conditions` (see below). If the cache file is OK, it will return its
   contents. Else, it will call the `$function`, passing it the target file, this function can write the
