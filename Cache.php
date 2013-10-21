@@ -163,9 +163,21 @@ class Cache
 		break;
 	    case 'younger-than':
             case 'youngerthan':
-                // Return false if the file is older than the file $value
-                if (!file_exists($value) || filectime($cacheFile) < filectime($value)) {
-                    return false;
+                // Return false if the file is older than the file $value, or the files $value
+                $check = function($filename) use ($cacheFile) {
+                    return !file_exists($filename) || filectime($cacheFile) < filectime($filename);
+                };
+
+                if (!is_array($value)) {
+                    if ($check($value)) {
+                        return false;
+                    }
+                } else {
+                    foreach ($value as $file) {
+                        if ($check($file)) {
+                            return false;
+                        }
+                    }
                 }
 		break;
 	    default:
