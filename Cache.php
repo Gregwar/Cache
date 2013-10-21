@@ -248,7 +248,9 @@ class Cache
         $data = null;
 
         if ($this->check($filename, $conditions)) {
-            $data = file_get_contents($cacheFile);
+            if (!$file) { 
+                $data = file_get_contents($cacheFile);
+            }
         } else {
             $data = $function($cacheFile);
 
@@ -256,7 +258,9 @@ class Cache
             if (!$this->check($filename, $conditions)) {
                 $this->write($filename, $data);
             } else {
-                $data = file_get_contents($cacheFile);
+                if (!$file) {
+                    $data = file_get_contents($cacheFile);
+                }
             }
         }
 
