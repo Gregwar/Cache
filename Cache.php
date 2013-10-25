@@ -146,8 +146,8 @@ class Cache
      */
     protected function checkConditions($cacheFile, array $conditions = array())
     {
-	// Implicit condition: the cache file should exist
-	if (!file_exists($cacheFile)) {
+        // Implicit condition: the cache file should exist
+        if (!file_exists($cacheFile)) {
 	    return false;
 	}
 
@@ -169,12 +169,12 @@ class Cache
                 };
 
                 if (!is_array($value)) {
-                    if ($check($value)) {
+                    if (!$this->isRemote($file) && $check($value)) {
                         return false;
                     }
                 } else {
                     foreach ($value as $file) {
-                        if ($check($file)) {
+                        if (!$this->isRemote($file) && $check($file)) {
                             return false;
                         }
                     }
@@ -235,6 +235,14 @@ class Cache
     }
 
     /**
+     * Is this URL remote?
+     */
+    protected function isRemote($file)
+    {
+        return preg_match('/^http(s{0,1}):\/\//', $file);
+    }
+
+    /**
      * Get or create the cache entry
      *
      * @param $filename the cache file name
@@ -248,19 +256,16 @@ class Cache
         $data = null;
 
         if ($this->check($filename, $conditions)) {
-            if (!$file) { 
-                $data = file_get_contents($cacheFile);
-            }
+            $data = file_get_contents($cacheFile);
         } else {
+            @unlink($cacheFile);
             $data = $function($cacheFile);
 
             // Test if the closure wrote the file or if it returned the data
-            if (!$this->check($filename, $conditions)) {
+            if (!file_exists($cacheFile)) {
                 $this->write($filename, $data);
             } else {
-                if (!$file) {
-                    $data = file_get_contents($cacheFile);
-                }
+                $data = file_get_contents($cacheFile);
             }
         }
 
