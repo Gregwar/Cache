@@ -169,7 +169,7 @@ class Cache
                 };
 
                 if (!is_array($value)) {
-                    if (!$this->isRemote($file) && $check($value)) {
+                    if (!$this->isRemote($value) && $check($value)) {
                         return false;
                     }
                 } else {
@@ -250,7 +250,7 @@ class Cache
      * @param $function the closure to call if the file does not exists
      * @param $file returns the cache file or the file contents
      */
-    public function getOrCreate($filename, array $conditions = array(), $function, $file = false)
+    public function getOrCreate($filename, array $conditions = array(), \Closure $function, $file = false)
     {
         $cacheFile = $this->getCacheFile($filename, true, true);
         $data = null;
