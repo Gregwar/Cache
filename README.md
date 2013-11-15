@@ -14,7 +14,7 @@ Via composer:
 ```json
 {
     "require": {
-        "gregwar/cache": "dev-master"
+        "gregwar/cache": "1.0.*"
     }
 }
 ```
