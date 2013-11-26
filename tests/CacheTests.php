@@ -68,6 +68,20 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         $this->assertEquals('zebra', $data);
     }
 
+    /**
+     * Testing that the not existing younger file works
+     */
+    public function testNotExistingYounger()
+    {
+        $cache = $this->getCache();
+
+        $data = $cache->getOrCreate('testing.txt', array('younger-than'=> 'i-dont-exist'), function() {
+            return 'some-data';
+        });
+
+        $this->assertEquals('some-data', $data);
+    }
+
     protected function getCache()
     {
         $cache = new Cache;
