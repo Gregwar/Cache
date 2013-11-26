@@ -20,7 +20,7 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         $actualCacheFile = $cache->getCacheFile('helloworld.txt', true);
         $this->assertEquals($cacheDir . '/h/e/l/l/o/helloworld.txt', $cacheFile);
         $this->assertEquals($actualCacheDir . '/h/e/l/l/o/helloworld.txt', $actualCacheFile);
-        
+
         $cacheFile = $cache->getCacheFile('xy.txt');
         $actualCacheFile = $cache->getCacheFile('xy.txt', true);
         $this->assertEquals($cacheDir . '/x/y/xy.txt', $cacheFile);
@@ -61,7 +61,7 @@ class CacheTests extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($cache->exists('testing.txt'));
         $this->assertEquals('zebra', $data);
-        
+
         $data = $cache->getOrCreate('testing.txt', array(), function() {
             return 'elephant';
         });
