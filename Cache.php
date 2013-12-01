@@ -249,8 +249,9 @@ class Cache
      * @param $conditions an array of conditions about expiration
      * @param $function the closure to call if the file does not exists
      * @param $file returns the cache file or the file contents
+     * @param $actual returns the actual cache file
      */
-    public function getOrCreate($filename, array $conditions = array(), \Closure $function, $file = false)
+    public function getOrCreate($filename, array $conditions = array(), \Closure $function, $file = false, $actual = false)
     {
         $cacheFile = $this->getCacheFile($filename, true, true);
         $data = null;
@@ -269,14 +270,14 @@ class Cache
             }
         }
 
-        return $file ? $this->getCacheFile($filename) : $data;
+        return $file ? $this->getCacheFile($filename, $actual) : $data;
     }
 
     /**
      * Alias to getOrCreate with $file = true
      */
-    public function getOrCreateFile($filename, array $conditions = array(), \Closure $function)
+    public function getOrCreateFile($filename, array $conditions = array(), \Closure $function, $actual = false)
     {
-        return $this->getOrCreate($filename, $conditions, $function, true);
+        return $this->getOrCreate($filename, $conditions, $function, true, $actual);
     }
 }
