@@ -271,4 +271,12 @@ class Cache
 
         return $file ? $this->getCacheFile($filename) : $data;
     }
+
+    /**
+     * Alias to getOrCreate with $file = true
+     */
+    public function getOrCreateFile($filename, array $conditions = array(), \Closure $function)
+    {
+        return $this->getOrCreate($filename, $conditions, $function, true);
+    }
 }

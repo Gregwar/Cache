@@ -69,6 +69,24 @@ class CacheTests extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Testing the getOrCreate function with $file=true
+     */
+    public function testGetOrCreateFile()
+    {
+        $dir = __DIR__;
+        $cache = $this->getCache();
+
+        $file = $dir.'/'.$cache->getOrCreateFile('file.txt', array(), function() {
+            return 'xyz';
+        });
+        $file2 = $dir.'/'.$cache->getOrCreate('file.txt', array(), function(){}, true);
+
+        $this->assertEquals($file, $file2);
+        $this->assertTrue(file_exists($file));
+        $this->assertEquals('xyz', file_get_contents($file));
+    }
+
+    /**
      * Testing that the not existing younger file works
      */
     public function testNotExistingYounger()
