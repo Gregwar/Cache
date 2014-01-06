@@ -16,11 +16,6 @@ class Cache
     protected $cacheDirectory;
 
     /**
-     * Use a different directory as actual cache
-     */
-    protected $actualCacheDirectory = null;
-
-    /**
      * Prefix directories size
      *
      * For instance, if the file is helloworld.txt and the prefix size is
@@ -96,14 +91,6 @@ class Cache
     }
 
     /**
-     * Returns the actual cache directory
-     */
-    public function getActualCacheDirectory()
-    {
-        return $this->actualCacheDirectory ?: $this->cacheDirectory;
-    }
-
-    /**
      * Change the prefix size
      *
      * @param $prefixSize the size of the prefix directories
@@ -128,14 +115,11 @@ class Cache
     }
 
     /**
-     * Gets the cache file name
+     * Gets the cache file path
      *
-     * @param $filename, the name of the cache file
-     * @param $actual get the actual file or the public file
-     * @param $mkdir, a boolean to enable/disable the construction of the
-     *        cache file directory
+     * @param string $filename cache file name
      */
-    public function getCacheFile($filename, $actual = false, $mkdir = false)
+    public function getCachePath($filename)
     {
 	$path = array();
 
@@ -149,18 +133,19 @@ class Cache
         }
 	$path = implode('/', $path);
 
-        $actualDir = $this->getActualCacheDirectory() . '/' . $path;
+	$path .= '/' . $filename;
+        return $this->getCacheDirectory() . '/' . $path;
+    }
+    
+    protected function createDir()
+    {
+        trigger_error('implement me');
+        die('implement');
+        // moved from getCacheFile / getCachePath
+                $actualDir = $this->getActualCacheDirectory() . '/' . $path;
         if ($mkdir && !is_dir($actualDir)) {
 	    mkdir($actualDir, 0755, true);
 	}
-
-	$path .= '/' . $filename;
-
-        if ($actual) {
-            return $this->getActualCacheDirectory() . '/' . $path;
-        } else {
-            return $this->getCacheDirectory() . '/' . $path;
-        }
     }
 
     /**
@@ -225,7 +210,7 @@ class Cache
      */
     public function exists($filename, array $conditions = array())
     {
-        $cacheFile = $this->getCacheFile($filename, true);
+        $cacheFile = $this->getCachePath($filename, true);
 
 	return $this->checkConditions($cacheFile, $conditions);
     }
@@ -245,7 +230,7 @@ class Cache
      */
     public function set($filename, $contents = '')
     {
-	$cacheFile = $this->getCacheFile($filename, true, true);
+	$cacheFile = $this->getCachePath($filename, true, true);
         file_put_contents($cacheFile, $contents);
         return $this;
     }
@@ -256,7 +241,7 @@ class Cache
     public function get($filename, array $conditions = array())
     {
 	if ($this->exists($filename, $conditions)) {
-	    return file_get_contents($this->getCacheFile($filename, true));
+	    return file_get_contents($this->getCachePath($filename, true));
 	} else {
 	    return null;
 	}
@@ -281,7 +266,7 @@ class Cache
      */
     public function getOrCreate($filename, array $conditions = array(), \Closure $function, $file = false, $actual = false)
     {
-        $cacheFile = $this->getCacheFile($filename, true, true);
+        $cacheFile = $this->getCachePath($filename, true, true);
         $data = null;
 
         if ($this->check($filename, $conditions)) {
@@ -298,7 +283,7 @@ class Cache
             }
         }
 
-        return $file ? $this->getCacheFile($filename, $actual) : $data;
+        return $file ? $this->getCachePath($filename, $actual) : $data;
     }
 
     /**
