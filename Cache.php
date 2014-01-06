@@ -250,14 +250,6 @@ class Cache
     }
 
     /**
-     * Alias for set()
-     */
-    public function write($filename, $contents = '')
-    {
-        return $this->set($filename, $contents);
-    }
-
-    /**
      * Get data from the cache
      */
     public function get($filename, array $conditions = array())
