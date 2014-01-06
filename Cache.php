@@ -16,15 +16,16 @@ class Cache
     protected $cacheDirectory;
 
     /**
-     * Prefix directories size
+     * directories size max depth
      *
-     * For instance, if the file is helloworld.txt and the prefix size is
+     * For instance, if the file is helloworld.txt and the depth size is
      * 5, the cache file will be: h/e/l/l/o/helloworld.txt
      *
      * This is useful to avoid reaching a too large number of files into the 
      * cache system directories
+     * @var int $pathDepth
      */
-    protected $prefixSize = 5;
+    protected $pathDepth = 5;
 
     /**
      * default configuration options
@@ -91,13 +92,14 @@ class Cache
     }
 
     /**
-     * Change the prefix size
+     * Set directories Path max depth
      *
-     * @param $prefixSize the size of the prefix directories
+     * @param int $size path max depth
+     * @return $this
      */
-    public function setPrefixSize($prefixSize)
+    public function setPathDepth($size)
     {
-        $this->prefixSize = $prefixSize;
+        $this->pathDepth = $size;
 
         return $this;
     }
@@ -127,7 +129,7 @@ class Cache
 	$parts = explode('.', $filename);
 	$len = strlen($parts[0]);
 
-	for ($i=0; $i<min($len, $this->prefixSize); $i++) {
+	for ($i=0; $i<min($len, $this->pathDepth); $i++) {
 	    $path[] = $filename[$i];
 
         }
