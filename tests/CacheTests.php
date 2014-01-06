@@ -108,6 +108,19 @@ class CacheTests extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * Check if configuration passed on constuctor is respected
+     * @covers Gregwar\Cache\Cache::__construct()
+     */
+    public function testConstuctor_onConfigPassed()
+    {
+        // initial_conditions : no cache
+        $initial_conditions = array('conditions' => array( 'max-age' => 0) );
+        $cache = new Cache($initial_conditions);
+        $cache->set('testing.txt', 'content');
+        $this->assertFalse($cache->exists('testing.txt'));
+    }
+    
+    /**
      * Testing the getOrCreate function
      */
     public function testGetOrCreate()

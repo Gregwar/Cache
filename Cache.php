@@ -5,6 +5,7 @@ namespace Gregwar\Cache;
 /**
  * A cache system based on files
  *
+ * @author Sébastien Monterisi <SebSept@github>
  * @author Gregwar <g.passault@gmail.com>
  */
 class Cache
@@ -31,11 +32,35 @@ class Cache
     protected $prefixSize = 5;
 
     /**
-     * Constructs the cache system
+     * default configuration options
+     * @var array 
      */
-    public function __construct($cacheDirectory = 'cache')
+    protected $options = ['cacheDirectory' => 'cache', 
+                          'conditions' => ['max-age' => 86400]
+            ];
+    
+    /**
+     * cache conditions
+     * 
+     * keys can be only 'max-age'
+     * will be overrided in __construct with $options['conditions']
+     * @var array associative array
+     */
+    protected $conditions = [];
+    
+    /**
+     * Constructs the cache system
+     * 
+     * Options param can be 'cacheDirectory' and 'conditions' @see Gregwar\Cache\Cache::$conditions
+     * @param array $options 
+     */
+    public function __construct($options = array())
     {
-	$this->cacheDirectory = $cacheDirectory;
+        // merge default options with passed
+        $this->options = array_merge($this->options, $options);
+
+	$this->cacheDirectory = $this->options['cacheDirectory'];
+        $this->conditions = $this->options['conditions'];
     }
 
     /**
@@ -142,7 +167,7 @@ class Cache
      * Checks that the cache conditions are respected
      *
      * @param $cacheFile the cache file
-     * @param $conditions an array of conditions to check
+     * @param $conditions an array of conditions to check, overrides current conditions
      */
     protected function checkConditions($cacheFile, array $conditions = array())
     {
@@ -151,9 +176,11 @@ class Cache
 	    return false;
 	}
 
+        // merge passed $conditions with currents
+        $conditions = array_merge($this->conditions, $conditions);
+        
 	foreach ($conditions as $type => $value) {
 	    switch ($type) {
-	    case 'maxage':
             case 'max-age':
 		// Return false if the file is older than $value
                 $age = time() - filectime($cacheFile);
