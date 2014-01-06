@@ -5,6 +5,8 @@ namespace Gregwar\Cache;
 /**
  * A cache system based on files
  *
+ * @todo validate cache_id with regexp
+ * 
  * @author Sébastien Monterisi <SebSept@github>
  * @author Gregwar <g.passault@gmail.com>
  */
@@ -230,15 +232,25 @@ class Cache
     }
 
     /**
-     * Write data in the cache
-     * @param string $filename cache id
+     * Caches contents
+     * 
+     * @todo throw Exception or display error if in debug mode (?)
+     * 
+     * @param string $cache_id 
      * @param string $contents contents to cache
      */
-    public function set($filename, $contents = '')
+    public function set($cache_id, $contents)
     {
-	$cacheFile = $this->getCachePath($filename, true, true);
-        file_put_contents($cacheFile, $contents);
-        return $this;
+	$cachePath = $this->getCachePath($cache_id);
+        try {
+            $this->createDir($cachePath);
+            file_put_contents($cachePath, $contents);
+            return $this;
+        }
+        catch(Exception $e)
+        {
+            return false;
+        }
     }
 
     /**
