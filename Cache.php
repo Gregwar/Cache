@@ -213,13 +213,21 @@ class Cache
     /**
      * Write data in the cache
      */
-    public function write($filename, $contents = '')
+    public function set($filename, $contents = '')
     {
 	$cacheFile = $this->getCacheFile($filename, true, true);
 
         file_put_contents($cacheFile, $contents);
 
         return $this;
+    }
+
+    /**
+     * Alias for set()
+     */
+    public function write($filename, $contents = '')
+    {
+        return $this->set($filename, $contents);
     }
 
     /**
