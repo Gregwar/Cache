@@ -15,12 +15,17 @@ class CacheTests extends \PHPUnit_Framework_TestCase
     /**
      * Sets up the fixture.
      * This method is called before a test is executed.
+     * 
+     * - Creates cache object
+     * - Checks 'testing.txt' is not existing
      */
     protected function setUp() {
         $this->cache = new Cache;
         $this->cache->setPrefixSize(5)
                     ->setCacheDirectory($this->getCacheDirectory())
                     ->setActualCacheDirectory($this->getActualCacheDirectory());
+        
+        $this->assertFalse($this->cache->exists('testing.txt'));
     }
     
     /**
@@ -42,28 +47,39 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         $this->assertEquals($cacheDir . '/x/y/xy.txt', $cacheFile);
         $this->assertEquals($actualCacheDir . '/x/y/xy.txt', $actualCacheFile);
     }
-
+    
     /**
      * @covers Gregwar\Cache\Cache::exists
      */
-    public function testExists()
+    public function testExits_onNoCondition()
     {
-        $cache = $this->cache;
-
-        $this->assertFalse($cache->exists('testing.txt'));
-        $cache->set('testing.txt', 'toto');
-        $this->assertTrue($cache->exists('testing.txt'));
+        $this->cache->set('testing.txt', 'content');
+        $this->assertTrue($this->cache->exists('testing.txt'));
+    }
+    
+    /**
+     * @covers Gregwar\Cache\Cache::exists
+     * Data should be cached
+     */
+    public function testExits_onMaxAgeValid()
+    {
+        $conditions = array('max-age' => 60); // 60 seconds
         
-        $this->assertFalse($cache->exists('testing2.txt'));
-        $cache->write('testing2.txt', 'toto');
-        $this->assertTrue($cache->exists('testing2.txt'));
-
-        $this->assertFalse($cache->exists('testing.txt', array(
-            'max-age' => -1
-        )));
-        $this->assertTrue($cache->exists('testing.txt', array(
-            'max-age' => 2
-        )));
+        $this->cache->set('testing.txt', 'content');
+        $this->assertTrue($this->cache->exists('testing.txt', $conditions));
+    }
+    
+    /**
+     * @covers Gregwar\Cache\Cache::exists
+     * Cache expired
+     */
+    public function testExits_onMaxAgeExpired()
+    {
+        $conditions = array('max-age' => 1); // 1 second
+        
+        $this->cache->set('testing.txt', 'content');
+        sleep(2);
+        $this->assertFalse($this->cache->exists('testing.txt', $conditions));
     }
     
     /**
