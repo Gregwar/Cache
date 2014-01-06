@@ -94,12 +94,14 @@ class Cache
     /**
      * Set directories Path max depth
      *
+     * @todo add min and max constants to validate size value
      * @param int $size path max depth
      * @return $this
      */
     public function setPathDepth($size)
     {
-        $this->pathDepth = $size;
+        if(filter_var($size, FILTER_VALIDATE_INT) && $size > 0)
+                $this->pathDepth = $size;
 
         return $this;
     }
