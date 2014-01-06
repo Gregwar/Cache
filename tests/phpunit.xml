@@ -8,7 +8,7 @@ and open the template in the editor.
 <phpunit bootstrap="bootstrap.php" colors="true">
   <testsuites>
     <testsuite name="Cache">
-      <file>CacheTests.php</file>
+      <file>CacheTest.php</file>
     </testsuite>
   </testsuites>
 </phpunit>

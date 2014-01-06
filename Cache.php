@@ -121,23 +121,25 @@ class Cache
     /**
      * Gets the cache file path
      *
-     * @param string $filename cache file name
+     * @todo refactor/recode
+     * @param string $cache_id cache file name
      */
-    public function getCachePath($filename)
+    public function getCachePath($cache_id)
     {
 	$path = array();
 
 	// Getting the length of the filename before the extension
-	$parts = explode('.', $filename);
+	$parts = explode('.', $cache_id);
 	$len = strlen($parts[0]);
 
 	for ($i=0; $i<min($len, $this->pathDepth); $i++) {
-	    $path[] = $filename[$i];
+	    $path[] = $cache_id[$i];
 
         }
+
 	$path = implode('/', $path);
 
-	$path .= '/' . $filename;
+	$path .= '/' . $cache_id;
         return $this->getCacheDirectory() . '/' . $path;
     }
     
