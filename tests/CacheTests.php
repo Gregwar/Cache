@@ -8,11 +8,27 @@ use Gregwar\Cache\Cache;
 class CacheTests extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @var Cache
+     */
+    protected $cache;
+    
+    /**
+     * Sets up the fixture.
+     * This method is called before a test is executed.
+     */
+    protected function setUp() {
+        $this->cache = new Cache;
+        $this->cache->setPrefixSize(5)
+                    ->setCacheDirectory($this->getCacheDirectory())
+                    ->setActualCacheDirectory($this->getActualCacheDirectory());
+    }
+    
+    /**
      * Testing that file names are good
      */
     public function testFileName()
     {
-        $cache = $this->getCache();
+        $cache = $this->cache;
 
         $cacheDir = $this->getCacheDirectory();
         $actualCacheDir = $this->getActualCacheDirectory();
@@ -32,7 +48,7 @@ class CacheTests extends \PHPUnit_Framework_TestCase
      */
     public function testExists()
     {
-        $cache = $this->getCache();
+        $cache = $this->cache;
 
         $this->assertFalse($cache->exists('testing.txt'));
         $cache->set('testing.txt', 'toto');
@@ -55,7 +71,7 @@ class CacheTests extends \PHPUnit_Framework_TestCase
      */
     public function testGetOrCreate()
     {
-        $cache = $this->getCache();
+        $cache = $this->cache;
 
         $this->assertFalse($cache->exists('testing.txt'));
 
@@ -78,7 +94,7 @@ class CacheTests extends \PHPUnit_Framework_TestCase
     public function testGetOrCreateFile()
     {
         $dir = __DIR__;
-        $cache = $this->getCache();
+        $cache = $this->cache;
 
         $file = $dir.'/'.$cache->getOrCreateFile('file.txt', array(), function() {
             return 'xyz';
@@ -95,7 +111,7 @@ class CacheTests extends \PHPUnit_Framework_TestCase
      */
     public function testNotExistingYounger()
     {
-        $cache = $this->getCache();
+        $cache = $this->cache;
 
         $data = $cache->getOrCreate('testing.txt', array('younger-than'=> 'i-dont-exist'), function() {
             return 'some-data';
@@ -104,16 +120,6 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         $this->assertEquals('some-data', $data);
     }
 
-    protected function getCache()
-    {
-        $cache = new Cache;
-
-        return $cache
-            ->setPrefixSize(5)
-            ->setCacheDirectory($this->getCacheDirectory())
-            ->setActualCacheDirectory($this->getActualCacheDirectory())
-            ;
-    }
 
     protected function getActualCacheDirectory()
     {
