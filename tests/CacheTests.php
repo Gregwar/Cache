@@ -83,6 +83,31 @@ class CacheTests extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @covers Gregwar\Cache\Cache::exists
+     * Cache expired - -1 second
+     */
+    public function testExits_onMaxAgeAlwaysExpired()
+    {
+        $conditions = array('max-age' => -1);
+        
+        $this->cache->set('testing.txt', 'content');
+        $this->assertFalse($this->cache->exists('testing.txt', $conditions));
+    }
+    
+    /**
+     * @covers Gregwar\Cache\Cache::exists
+     * Cache expired - 0 second
+     * 0 second proprably means 'no cache'
+     */
+    public function testExits_onMaxAgeZero()
+    {
+        $conditions = array('max-age' => 0);
+        
+        $this->cache->set('testing.txt', 'content');
+        $this->assertFalse($this->cache->exists('testing.txt', $conditions));
+    }
+    
+    /**
      * Testing the getOrCreate function
      */
     public function testGetOrCreate()
