@@ -166,8 +166,9 @@ class Cache
     /**
      * Checks that the cache conditions are respected
      *
-     * @param $cacheFile the cache file
-     * @param $conditions an array of conditions to check, overrides current conditions
+     * @param string $cacheFile the cache file to check
+     * @param array $conditions an array of conditions to check, overrides current conditions
+     * @return bool
      */
     protected function checkConditions($cacheFile, array $conditions = array())
     {
@@ -239,13 +240,13 @@ class Cache
 
     /**
      * Write data in the cache
+     * @param string $filename cache id
+     * @param string $contents contents to cache
      */
     public function set($filename, $contents = '')
     {
 	$cacheFile = $this->getCacheFile($filename, true, true);
-
         file_put_contents($cacheFile, $contents);
-
         return $this;
     }
 
