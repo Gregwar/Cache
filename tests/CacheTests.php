@@ -28,9 +28,9 @@ class CacheTests extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Testing caching a file
+     * @covers Gregwar\Cache\Cache::exists
      */
-    public function testCaching()
+    public function testExists()
     {
         $cache = $this->getCache();
 
@@ -49,7 +49,7 @@ class CacheTests extends \PHPUnit_Framework_TestCase
             'max-age' => 2
         )));
     }
-
+    
     /**
      * Testing the getOrCreate function
      */
