@@ -156,8 +156,8 @@ class Cache
 	    case 'maxage':
             case 'max-age':
 		// Return false if the file is older than $value
-                $age = filectime($cacheFile) - time();
-                if ($age > $value) {
+                $age = time() - filectime($cacheFile);
+                if ($age >= $value) {
                     return false;
                 }
 		break;
