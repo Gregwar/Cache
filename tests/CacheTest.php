@@ -9,6 +9,8 @@ namespace Gregwar\Cache;
 class CacheTest extends \PHPUnit_Framework_TestCase
 {
     const CACHEDIR = '/tmp/cacheTests';
+    const NONEXISTINGDIR = '/dev/null/doenstexist';
+    const EXISTINGDIR = '/tmp';
 
     /**
      * @var Cache
@@ -22,7 +24,8 @@ class CacheTest extends \PHPUnit_Framework_TestCase
      * - Creates cache object
      * - Checks 'testing.txt' is not existing
      */
-    protected function setUp() {
+    protected function setUp() 
+    {
         $this->cache = new Cache( array('cacheDirectory' => self::CACHEDIR) );
         $this->cache->setPathDepth(5);
         
@@ -66,6 +69,48 @@ class CacheTest extends \PHPUnit_Framework_TestCase
                 );
     }
     
+    /**
+     * @covers Gregwar\Cache\Cache::setCacheDirectory
+     */
+    public function testSetCacheDirectory_onNonExistingDir() 
+    {
+        $this->assertFalse($this->cache->setCacheDirectory(self::NONEXISTINGDIR));
+    }
+    
+    /**
+     * @covers Gregwar\Cache\Cache::setCacheDirectory
+     */
+    public function testSetCacheDirectory_onExistingDir()
+    {
+        $this->assertTrue($this->cache->setCacheDirectory(self::EXISTINGDIR));
+    }
+
+    /**
+     * @covers Gregwar\Cache\Cache::getCacheDirectory
+     */
+    public function testGetCacheDirectory_onDefault() 
+    {
+        $this->assertEquals( self::CACHEDIR , $this->cache->getCacheDirectory());
+    }
+    
+    /**
+     * @covers Gregwar\Cache\Cache::getCacheDirectory
+     */
+    public function testGetCacheDirectory_onChangedExisting() 
+    {
+        $this->cache->setCacheDirectory(self::EXISTINGDIR);
+        $this->assertEquals(self::EXISTINGDIR, $this->cache->getCacheDirectory());
+    }
+    
+    /**
+     * @covers Gregwar\Cache\Cache::getCacheDirectory
+     * dir must not be changed, equals to default
+     */
+    public function testGetCacheDirectory_onChangedNonExisting() 
+    {
+        $this->cache->setCacheDirectory(self::NONEXISTINGDIR);
+        $this->assertEquals(self::CACHEDIR, $this->cache->getCacheDirectory());
+    }
     
     // --- original tests from GregWar
     /**
