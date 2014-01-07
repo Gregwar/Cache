@@ -8,11 +8,32 @@ use Gregwar\Cache\Cache;
 class CacheTests extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @var Cache
+     */
+    protected $cache;
+    
+    /**
+     * Sets up the fixture.
+     * This method is called before a test is executed.
+     * 
+     * - Creates cache object
+     * - Checks 'testing.txt' is not existing
+     */
+    protected function setUp() {
+        $this->cache = new Cache;
+        $this->cache->setPrefixSize(5)
+                    ->setCacheDirectory($this->getCacheDirectory())
+                    ->setActualCacheDirectory($this->getActualCacheDirectory());
+        
+        $this->assertFalse($this->cache->exists('testing.txt'));
+    }
+    
+    /**
      * Testing that file names are good
      */
     public function testFileName()
     {
-        $cache = $this->getCache();
+        $cache = $this->cache;
 
         $cacheDir = $this->getCacheDirectory();
         $actualCacheDir = $this->getActualCacheDirectory();
@@ -26,36 +47,72 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         $this->assertEquals($cacheDir . '/x/y/xy.txt', $cacheFile);
         $this->assertEquals($actualCacheDir . '/x/y/xy.txt', $actualCacheFile);
     }
-
+    
     /**
-     * Testing caching a file
+     * @covers Gregwar\Cache\Cache::exists
      */
-    public function testCaching()
+    public function testExits_onNoCondition()
     {
-        $cache = $this->getCache();
-
-        $this->assertFalse($cache->exists('testing.txt'));
-        $cache->set('testing.txt', 'toto');
-        $this->assertTrue($cache->exists('testing.txt'));
-        
-        $this->assertFalse($cache->exists('testing2.txt'));
-        $cache->write('testing2.txt', 'toto');
-        $this->assertTrue($cache->exists('testing2.txt'));
-
-        $this->assertFalse($cache->exists('testing.txt', array(
-            'max-age' => -1
-        )));
-        $this->assertTrue($cache->exists('testing.txt', array(
-            'max-age' => 2
-        )));
+        $this->cache->set('testing.txt', 'content');
+        $this->assertTrue($this->cache->exists('testing.txt'));
     }
-
+    
+    /**
+     * @covers Gregwar\Cache\Cache::exists
+     * Data should be cached
+     */
+    public function testExits_onMaxAgeValid()
+    {
+        $conditions = array('max-age' => 60); // 60 seconds
+        
+        $this->cache->set('testing.txt', 'content');
+        $this->assertTrue($this->cache->exists('testing.txt', $conditions));
+    }
+    
+    /**
+     * @covers Gregwar\Cache\Cache::exists
+     * Cache expired
+     */
+    public function testExits_onMaxAgeExpired()
+    {
+        $conditions = array('max-age' => 1); // 1 second
+        
+        $this->cache->set('testing.txt', 'content');
+        sleep(2);
+        $this->assertFalse($this->cache->exists('testing.txt', $conditions));
+    }
+    
+    /**
+     * @covers Gregwar\Cache\Cache::exists
+     * Cache expired - -1 second
+     */
+    public function testExits_onMaxAgeAlwaysExpired()
+    {
+        $conditions = array('max-age' => -1);
+        
+        $this->cache->set('testing.txt', 'content');
+        $this->assertFalse($this->cache->exists('testing.txt', $conditions));
+    }
+    
+    /**
+     * @covers Gregwar\Cache\Cache::exists
+     * Cache expired - 0 second
+     * 0 second proprably means 'no cache'
+     */
+    public function testExits_onMaxAgeZero()
+    {
+        $conditions = array('max-age' => 0);
+        
+        $this->cache->set('testing.txt', 'content');
+        $this->assertFalse($this->cache->exists('testing.txt', $conditions));
+    }
+    
     /**
      * Testing the getOrCreate function
      */
     public function testGetOrCreate()
     {
-        $cache = $this->getCache();
+        $cache = $this->cache;
 
         $this->assertFalse($cache->exists('testing.txt'));
 
@@ -78,7 +135,7 @@ class CacheTests extends \PHPUnit_Framework_TestCase
     public function testGetOrCreateFile()
     {
         $dir = __DIR__;
-        $cache = $this->getCache();
+        $cache = $this->cache;
 
         $file = $dir.'/'.$cache->getOrCreateFile('file.txt', array(), function() {
             return 'xyz';
@@ -95,7 +152,7 @@ class CacheTests extends \PHPUnit_Framework_TestCase
      */
     public function testNotExistingYounger()
     {
-        $cache = $this->getCache();
+        $cache = $this->cache;
 
         $data = $cache->getOrCreate('testing.txt', array('younger-than'=> 'i-dont-exist'), function() {
             return 'some-data';
@@ -104,16 +161,6 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         $this->assertEquals('some-data', $data);
     }
 
-    protected function getCache()
-    {
-        $cache = new Cache;
-
-        return $cache
-            ->setPrefixSize(5)
-            ->setCacheDirectory($this->getCacheDirectory())
-            ->setActualCacheDirectory($this->getActualCacheDirectory())
-            ;
-    }
 
     protected function getActualCacheDirectory()
     {
