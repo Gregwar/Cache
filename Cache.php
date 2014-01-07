@@ -63,14 +63,22 @@ class Cache
 
     /**
      * Sets the cache directory
+     * 
+     * Set the cache directory if exists
      *
-     * @param $cacheDirectory the cache directory
+     * @todo also check that dir is writable 
+     * 
+     * @param string $cacheDirectory the cache directory. Without ending '/'
+     * @return bool
      */
     public function setCacheDirectory($cacheDirectory)
     {
-	$this->cacheDirectory = $cacheDirectory;
-
-	return $this;
+        if(file_exists($cacheDirectory))
+        {
+            $this->cacheDirectory = $cacheDirectory;
+            return true;
+        }
+	return false;
     }
 
     /**
@@ -81,16 +89,6 @@ class Cache
     public function getCacheDirectory()
     {
 	return $this->cacheDirectory;
-    }
-
-    /**
-     * Sets the actual cache directory
-     */
-    public function setActualCacheDirectory($actualCacheDirectory = null)
-    {
-        $this->actualCacheDirectory = $actualCacheDirectory;
-
-        return $this;
     }
 
     /**
