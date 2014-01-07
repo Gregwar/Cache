@@ -272,7 +272,7 @@ class Cache
 
             // Test if the closure wrote the file or if it returned the data
             if (!file_exists($cacheFile)) {
-                $this->write($filename, $data);
+                $this->set($filename, $data);
             } else {
                 $data = file_get_contents($cacheFile);
             }
