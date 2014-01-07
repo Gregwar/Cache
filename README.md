@@ -14,7 +14,7 @@ Via composer:
 ```json
 {
     "require": {
-        "gregwar/cache": "dev-master"
+        "gregwar/cache": "1.0.*"
     }
 }
 ```
@@ -84,7 +84,8 @@ You can use the following methods:
 * `getCacheFile($filename, $actual = false, $mkdir = false)`: gets the cache file. If the `$actual` flag
   is true, the actual cache file name will be returned (see below), if the `$mkdir` flag is true, the
   cache file directories tree will be created.
-* `write($filename, $contents)`: write contents to `$filename` cache file.
+* `set($filename, $contents)`: write contents to `$filename` cache file.
+* `write($filename, $contents)`: alias for `set()`
 * `get($filename, $conditions = array())`: if the cache file for `$filename` exists, contents will be
   returned, else, `NULL` will be returned.
 * `setPrefixSize($prefixSize)`: sets the prefix size for directories, default is 5. For instance, the

@@ -169,7 +169,7 @@ class Cache
                 };
 
                 if (!is_array($value)) {
-                    if (!$this->isRemote($file) && $check($value)) {
+                    if (!$this->isRemote($value) && $check($value)) {
                         return false;
                     }
                 } else {
@@ -213,13 +213,21 @@ class Cache
     /**
      * Write data in the cache
      */
-    public function write($filename, $contents = '')
+    public function set($filename, $contents = '')
     {
 	$cacheFile = $this->getCacheFile($filename, true, true);
 
         file_put_contents($cacheFile, $contents);
 
         return $this;
+    }
+
+    /**
+     * Alias for set()
+     */
+    public function write($filename, $contents = '')
+    {
+        return $this->set($filename, $contents);
     }
 
     /**
@@ -249,8 +257,9 @@ class Cache
      * @param $conditions an array of conditions about expiration
      * @param $function the closure to call if the file does not exists
      * @param $file returns the cache file or the file contents
+     * @param $actual returns the actual cache file
      */
-    public function getOrCreate($filename, array $conditions = array(), $function, $file = false)
+    public function getOrCreate($filename, array $conditions = array(), \Closure $function, $file = false, $actual = false)
     {
         $cacheFile = $this->getCacheFile($filename, true, true);
         $data = null;
@@ -263,12 +272,20 @@ class Cache
 
             // Test if the closure wrote the file or if it returned the data
             if (!file_exists($cacheFile)) {
-                $this->write($filename, $data);
+                $this->set($filename, $data);
             } else {
                 $data = file_get_contents($cacheFile);
             }
         }
 
-        return $file ? $this->getCacheFile($filename) : $data;
+        return $file ? $this->getCacheFile($filename, $actual) : $data;
+    }
+
+    /**
+     * Alias to getOrCreate with $file = true
+     */
+    public function getOrCreateFile($filename, array $conditions = array(), \Closure $function, $actual = false)
+    {
+        return $this->getOrCreate($filename, $conditions, $function, true, $actual);
     }
 }
