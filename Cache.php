@@ -5,6 +5,9 @@ namespace Gregwar\Cache;
 /**
  * A cache system based on files
  *
+ * @todo validate cache_id with regexp
+ * 
+ * @author Sébastien Monterisi <SebSept@github>
  * @author Gregwar <g.passault@gmail.com>
  */
 class Cache
@@ -15,39 +18,67 @@ class Cache
     protected $cacheDirectory;
 
     /**
-     * Use a different directory as actual cache
-     */
-    protected $actualCacheDirectory = null;
-
-    /**
-     * Prefix directories size
+     * directories size max depth
      *
-     * For instance, if the file is helloworld.txt and the prefix size is
+     * For instance, if the file is helloworld.txt and the depth size is
      * 5, the cache file will be: h/e/l/l/o/helloworld.txt
      *
      * This is useful to avoid reaching a too large number of files into the 
      * cache system directories
+     * @var int $pathDepth
      */
-    protected $prefixSize = 5;
+    protected $pathDepth = 5;
 
     /**
-     * Constructs the cache system
+     * default configuration options
+     * @var array 
      */
-    public function __construct($cacheDirectory = 'cache')
+    protected $options = ['cacheDirectory' => 'cache', 
+                          'conditions' => ['max-age' => 86400]
+            ];
+    
+    /**
+     * cache conditions
+     * 
+     * keys can be only 'max-age'
+     * will be overrided in __construct with $options['conditions']
+     * @var array associative array
+     */
+    protected $conditions = [];
+    
+    /**
+     * Constructs the cache system
+     * 
+     * Options param can be 'cacheDirectory' and 'conditions' @see Gregwar\Cache\Cache::$conditions
+     * @param array $options 
+     */
+    public function __construct($options = array())
     {
-	$this->cacheDirectory = $cacheDirectory;
+        // merge default options with passed
+        $this->options = array_merge($this->options, $options);
+
+	$this->cacheDirectory = $this->options['cacheDirectory'];
+        $this->conditions = $this->options['conditions'];
     }
 
     /**
      * Sets the cache directory
+     * 
+     * Set the cache directory if exists
      *
-     * @param $cacheDirectory the cache directory
+     * @todo also check that dir is writable 
+     * 
+     * @param string $cacheDirectory the cache directory. Without ending '/'
+     * @return bool
      */
     public function setCacheDirectory($cacheDirectory)
     {
-	$this->cacheDirectory = $cacheDirectory;
-
-	return $this;
+        if(file_exists($cacheDirectory))
+        {
+            $this->cacheDirectory = $cacheDirectory;
+            return true;
+        }
+	return false;
     }
 
     /**
@@ -61,31 +92,16 @@ class Cache
     }
 
     /**
-     * Sets the actual cache directory
-     */
-    public function setActualCacheDirectory($actualCacheDirectory = null)
-    {
-        $this->actualCacheDirectory = $actualCacheDirectory;
-
-        return $this;
-    }
-
-    /**
-     * Returns the actual cache directory
-     */
-    public function getActualCacheDirectory()
-    {
-        return $this->actualCacheDirectory ?: $this->cacheDirectory;
-    }
-
-    /**
-     * Change the prefix size
+     * Set directories Path max depth
      *
-     * @param $prefixSize the size of the prefix directories
+     * @todo add min and max constants to validate size value
+     * @param int $size path max depth
+     * @return $this
      */
-    public function setPrefixSize($prefixSize)
+    public function setPathDepth($size)
     {
-        $this->prefixSize = $prefixSize;
+        if(filter_var($size, FILTER_VALIDATE_INT) && $size > 0)
+                $this->pathDepth = $size;
 
         return $this;
     }
@@ -103,46 +119,47 @@ class Cache
     }
 
     /**
-     * Gets the cache file name
+     * Gets the cache file path
      *
-     * @param $filename, the name of the cache file
-     * @param $actual get the actual file or the public file
-     * @param $mkdir, a boolean to enable/disable the construction of the
-     *        cache file directory
+     * @todo refactor/recode
+     * @param string $cache_id cache file name
      */
-    public function getCacheFile($filename, $actual = false, $mkdir = false)
+    public function getCachePath($cache_id)
     {
 	$path = array();
 
 	// Getting the length of the filename before the extension
-	$parts = explode('.', $filename);
+	$parts = explode('.', $cache_id);
 	$len = strlen($parts[0]);
 
-	for ($i=0; $i<min($len, $this->prefixSize); $i++) {
-	    $path[] = $filename[$i];
+	for ($i=0; $i<min($len, $this->pathDepth); $i++) {
+	    $path[] = $cache_id[$i];
 
         }
+
 	$path = implode('/', $path);
 
-        $actualDir = $this->getActualCacheDirectory() . '/' . $path;
+	$path .= '/' . $cache_id;
+        return $this->getCacheDirectory() . '/' . $path;
+    }
+    
+    protected function createDir()
+    {
+        trigger_error('implement me');
+        die('implement');
+        // moved from getCacheFile / getCachePath
+                $actualDir = $this->getActualCacheDirectory() . '/' . $path;
         if ($mkdir && !is_dir($actualDir)) {
 	    mkdir($actualDir, 0755, true);
 	}
-
-	$path .= '/' . $filename;
-
-        if ($actual) {
-            return $this->getActualCacheDirectory() . '/' . $path;
-        } else {
-            return $this->getCacheDirectory() . '/' . $path;
-        }
     }
 
     /**
      * Checks that the cache conditions are respected
      *
-     * @param $cacheFile the cache file
-     * @param $conditions an array of conditions to check
+     * @param string $cacheFile the cache file to check
+     * @param array $conditions an array of conditions to check, overrides current conditions
+     * @return bool
      */
     protected function checkConditions($cacheFile, array $conditions = array())
     {
@@ -151,13 +168,15 @@ class Cache
 	    return false;
 	}
 
+        // merge passed $conditions with currents
+        $conditions = array_merge($this->conditions, $conditions);
+        
 	foreach ($conditions as $type => $value) {
 	    switch ($type) {
-	    case 'maxage':
             case 'max-age':
 		// Return false if the file is older than $value
-                $age = filectime($cacheFile) - time();
-                if ($age > $value) {
+                $age = time() - filectime($cacheFile);
+                if ($age >= $value) {
                     return false;
                 }
 		break;
@@ -197,7 +216,7 @@ class Cache
      */
     public function exists($filename, array $conditions = array())
     {
-        $cacheFile = $this->getCacheFile($filename, true);
+        $cacheFile = $this->getCachePath($filename, true);
 
 	return $this->checkConditions($cacheFile, $conditions);
     }
@@ -211,23 +230,25 @@ class Cache
     }
 
     /**
-     * Write data in the cache
+     * Caches contents
+     * 
+     * @todo throw Exception or display error if in debug mode (?)
+     * 
+     * @param string $cache_id 
+     * @param string $contents contents to cache
      */
-    public function set($filename, $contents = '')
+    public function set($cache_id, $contents)
     {
-	$cacheFile = $this->getCacheFile($filename, true, true);
-
-        file_put_contents($cacheFile, $contents);
-
-        return $this;
-    }
-
-    /**
-     * Alias for set()
-     */
-    public function write($filename, $contents = '')
-    {
-        return $this->set($filename, $contents);
+	$cachePath = $this->getCachePath($cache_id);
+        try {
+            $this->createDir($cachePath);
+            file_put_contents($cachePath, $contents);
+            return $this;
+        }
+        catch(Exception $e)
+        {
+            return false;
+        }
     }
 
     /**
@@ -236,7 +257,7 @@ class Cache
     public function get($filename, array $conditions = array())
     {
 	if ($this->exists($filename, $conditions)) {
-	    return file_get_contents($this->getCacheFile($filename, true));
+	    return file_get_contents($this->getCachePath($filename, true));
 	} else {
 	    return null;
 	}
@@ -261,7 +282,7 @@ class Cache
      */
     public function getOrCreate($filename, array $conditions = array(), \Closure $function, $file = false, $actual = false)
     {
-        $cacheFile = $this->getCacheFile($filename, true, true);
+        $cacheFile = $this->getCachePath($filename, true, true);
         $data = null;
 
         if ($this->check($filename, $conditions)) {
@@ -278,7 +299,7 @@ class Cache
             }
         }
 
-        return $file ? $this->getCacheFile($filename, $actual) : $data;
+        return $file ? $this->getCachePath($filename, $actual) : $data;
     }
 
     /**
