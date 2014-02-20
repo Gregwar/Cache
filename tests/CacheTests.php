@@ -48,6 +48,10 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         $this->assertTrue($cache->exists('testing.txt', array(
             'max-age' => 2
         )));
+        sleep(3);
+        $this->assertFalse($cache->exists('testing.txt', array(
+            'max-age' => 2
+        )));
     }
 
     /**
