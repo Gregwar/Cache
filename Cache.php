@@ -261,7 +261,7 @@ class Cache
      * @param $dirmode permission mod of directories
      * @param $filemode permission mod of files
      */
-     public function chmod($dirmode, $filemode=0666)
+     public function chmod($dirmode=0777, $filemode=0666)
      {
          $this->dirmode = $dirmode;
          $this->filemode = $filemode;
