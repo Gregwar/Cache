@@ -20,5 +20,8 @@
         "psr-0": {
             "Gregwar\\Cache": ""
         }
+    },
+    "require": {
+        "php": ">=5.1.2",
     }
 }
