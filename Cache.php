@@ -29,6 +29,19 @@ class Cache
      * cache system directories
      */
     protected $prefixSize = 5;
+    
+    /**
+     * Permission mode value of cache directories
+     * 
+     * Default is 0777 for match with default builtin mkdir(). 
+     * User can use chmod or umask.
+     */
+    protected $dirmode = 0777;
+    
+    /**
+     * Permission mode value of cache files
+     */
+    protected $filemode = 0666;
 
     /**
      * Constructs the cache system
@@ -89,7 +102,7 @@ class Cache
 
         return $this;
     }
-
+    
     /**
      * Creates a directory
      *
@@ -98,7 +111,7 @@ class Cache
     protected function mkdir($directory)
     {
         if (!is_dir($directory)) {
-            @mkdir($directory, 0755, true);
+            @mkdir($directory, $this->dirmode, true);
         }
     }
 
@@ -124,10 +137,10 @@ class Cache
         }
 	$path = implode('/', $path);
 
-        $actualDir = $this->getActualCacheDirectory() . '/' . $path;
-        if ($mkdir && !is_dir($actualDir)) {
-	    mkdir($actualDir, 0755, true);
-	}
+    $actualDir = $this->getActualCacheDirectory() . '/' . $path;
+    if ($mkdir && !is_dir($actualDir)) {
+        mkdir($actualDir, $this->dirmode, true);
+    }
 
 	$path .= '/' . $filename;
 
@@ -189,7 +202,7 @@ class Cache
     }
 
     /**
-     * Checks if the targt filename exists in the cache and if the conditions
+     * Checks if the target filename exists in the cache and if the conditions
      * are respected
      *
      * @param $filename the filename 
@@ -218,7 +231,7 @@ class Cache
 	$cacheFile = $this->getCacheFile($filename, true, true);
 
         file_put_contents($cacheFile, $contents);
-
+        chmod($cacheFile, $this->filemode);
         return $this;
     }
 
@@ -241,6 +254,33 @@ class Cache
 	    return null;
 	}
     }
+
+    /**
+     * Change cache directories and files permissions
+     * 
+     * @param $dirmode permission mod of directories
+     * @param $filemode permission mod of files
+     */
+     public function chmod($dirmode, $filemode=0666)
+     {
+         $this->dirmode = $dirmode;
+         $this->filemode = $filemode;
+         $cacheDirectory = $this->getActualCacheDirectory();
+         if(is_dir($cacheDirectory)){
+             $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($cacheDirectory), 
+                \RecursiveIteratorIterator::SELF_FIRST);
+             foreach ($iterator as $item) {
+                 if(is_dir($item)){
+                     chmod($item, $dirmode);
+                 } else {
+                     chmod($item, $filemode);
+                 }
+             }
+         }
+         
+         return $this;
+     }
 
     /**
      * Is this URL remote?
@@ -274,6 +314,7 @@ class Cache
             if (!file_exists($cacheFile)) {
                 $this->set($filename, $data);
             } else {
+                chmod($cacheFile, $this->filemode);
                 $data = file_get_contents($cacheFile);
             }
         }
