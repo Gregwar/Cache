@@ -9,6 +9,12 @@
             "email": "g.passault@gmail.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Gregwar/Cache.git"
+        }
+    ],
     "target-dir": "Gregwar/Cache",
     "autoload": {
         "psr-0": {
