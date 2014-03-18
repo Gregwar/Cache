@@ -37,11 +37,6 @@ class Cache
      * User can use chmod or umask.
      */
     protected $dirmode = 0777;
-    
-    /**
-     * Permission mode value of cache files
-     */
-    protected $filemode = 0666;
 
     /**
      * Constructs the cache system
@@ -101,6 +96,22 @@ class Cache
         $this->prefixSize = $prefixSize;
 
         return $this;
+    }
+    
+    /**
+     * Change default permission mode value of cache directories (default is 0777 for match with default builtin `mkdir()`).
+     * 
+     * You can also use `umask()`. If umask is equal to 0002, `mkdir("dir",0777)` make a directory
+     * with mode equal to 0775. ([see umask php doc](http://php.net/manual/function.umask.php))
+     * 
+     * **Note**: Files already present in cache will be not modified. 
+     * Use `Cache::chmod()` for modify current cache.
+     * 
+     * @param integer $mode octal number represent directory permissions with unix integer mode format
+     *  ([see chmod man page](http://www.freebsd.org/cgi/man.cgi?query=chmod))
+     */
+    public function setDefaultDirMode(integer $mode){
+        $this->dirmode = $mode;
     }
     
     /**
@@ -256,15 +267,20 @@ class Cache
     }
 
     /**
-     * Change cache directories and files permissions
+     * Change recursively all cache directories and files permissions.
      * 
-     * @param $dirmode permission mod of directories
-     * @param $filemode permission mod of files
+     * **Note** : Prefer `Cache::setDefaultDirMode()` before cache creation.
+     * 
+     * This method will scan the entire cache, therefore may  take time for 
+     * a large cache.
+     * 
+     * @param integer $dirmode octal number represent directory permissions with unix integer mode format. 
+     *  ([see chmod man page](http://www.freebsd.org/cgi/man.cgi?query=chmod))
+     * @param integer $filemode octal number represent files permissions with unix integer mode format
+     *  ([see chmod man page](http://www.freebsd.org/cgi/man.cgi?query=chmod))
      */
-     public function chmod($dirmode=0777, $filemode=0666)
+     public function chmod($dirmode, $filemode)
      {
-         $this->dirmode = $dirmode;
-         $this->filemode = $filemode;
          $cacheDirectory = $this->getActualCacheDirectory();
          if(is_dir($cacheDirectory)){
              $iterator = new \RecursiveIteratorIterator(
@@ -314,7 +330,6 @@ class Cache
             if (!file_exists($cacheFile)) {
                 $this->set($filename, $data);
             } else {
-                chmod($cacheFile, $this->filemode);
                 $data = file_get_contents($cacheFile);
             }
         }
