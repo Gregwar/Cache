@@ -104,7 +104,7 @@ class Cache {
      * You can also use `umask()`. If umask is equal to 0002, `mkdir("dir",0777)` make a directory
      * with mode equal to 0775. ([see umask php doc](http://php.net/manual/function.umask.php))
      *
-     * **Note**: Files already present in cache will be not modified.
+     * **Note**: Files already present in cache will not be modified.
      * Use `Cache::chmod()` for modify current cache.
      *
      * @param int $mode octal number represent directory permissions with unix integer mode format
