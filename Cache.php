@@ -38,7 +38,7 @@ class Cache {
      * @param string $cacheDirectory cache location.
      */
     public function __construct($cacheDirectory = 'cache') {
-        $this -> cacheDirectory = $cacheDirectory;
+        $this->cacheDirectory = $cacheDirectory;
     }
 
     /**
@@ -48,7 +48,7 @@ class Cache {
      * @return Cache instance of Cache object
      */
     public function setCacheDirectory($cacheDirectory) {
-        $this -> cacheDirectory = $cacheDirectory;
+        $this->cacheDirectory = $cacheDirectory;
         return $this;
     }
 
@@ -58,7 +58,7 @@ class Cache {
      * @return string the cache directory url
      */
     public function getCacheDirectory() {
-        return $this -> cacheDirectory;
+        return $this->cacheDirectory;
     }
 
     /**
@@ -68,7 +68,7 @@ class Cache {
      * @return Cache instance of Cache object.
      */
     public function setActualCacheDirectory($actualCacheDirectory = null) {
-        $this -> actualCacheDirectory = $actualCacheDirectory;
+        $this->actualCacheDirectory = $actualCacheDirectory;
         return $this;
     }
 
@@ -78,7 +78,7 @@ class Cache {
      * @return string the actual cache directory
      */
     public function getActualCacheDirectory() {
-        return $this -> actualCacheDirectory ? : $this -> cacheDirectory;
+        return $this->actualCacheDirectory ? : $this->cacheDirectory;
     }
 
     /**
@@ -94,7 +94,7 @@ class Cache {
      * @return Cache instance of Cache object
      */
     public function setPrefixSize($prefixSize) {
-        $this -> prefixSize = $prefixSize;
+        $this->prefixSize = $prefixSize;
         return $this;
     }
 
@@ -111,7 +111,7 @@ class Cache {
      *  ([see chmod man page](http://www.freebsd.org/cgi/man.cgi?query=chmod))
      */
     public function setDefaultDirMode($mode) {
-        $this -> dirmode = $mode;
+        $this->dirmode = $mode;
     }
 
     /**
@@ -121,7 +121,7 @@ class Cache {
      */
     protected function mkdir($directory) {
         if (!is_dir($directory)) {
-            @mkdir($directory, $this -> dirmode, true);
+            @mkdir($directory, $this->dirmode, true);
         }
     }
 
@@ -140,23 +140,23 @@ class Cache {
         $parts = explode('.', $filename);
         $len = strlen($parts[0]);
 
-        for ($i = 0; $i < min($len, $this -> prefixSize); $i++) {
+        for ($i = 0; $i < min($len, $this->prefixSize); $i++) {
             $path[] = $filename[$i];
 
         }
         $path = implode('/', $path);
 
-        $actualDir = $this -> getActualCacheDirectory() . '/' . $path;
+        $actualDir = $this->getActualCacheDirectory() . '/' . $path;
         if ($mkdir && !is_dir($actualDir)) {
-            mkdir($actualDir, $this -> dirmode, true);
+            mkdir($actualDir, $this->dirmode, true);
         }
 
         $path .= '/' . $filename;
 
         if ($actual) {
-            return $this -> getActualCacheDirectory() . '/' . $path;
+            return $this->getActualCacheDirectory() . '/' . $path;
         } else {
-            return $this -> getCacheDirectory() . '/' . $path;
+            return $this->getCacheDirectory() . '/' . $path;
         }
     }
 
@@ -191,12 +191,12 @@ class Cache {
                     };
 
                     if (!is_array($value)) {
-                        if (!$this -> isRemote($value) && $check($value)) {
+                        if (!$this->isRemote($value) && $check($value)) {
                             return false;
                         }
                     } else {
                         foreach ($value as $file) {
-                            if (!$this -> isRemote($file) && $check($file)) {
+                            if (!$this->isRemote($file) && $check($file)) {
                                 return false;
                             }
                         }
@@ -219,9 +219,9 @@ class Cache {
      * @return bool filename exists in the cache and if the conditions are respected
      */
     public function exists($filename, array $conditions = array()) {
-        $cacheFile = $this -> getCacheFile($filename, true);
+        $cacheFile = $this->getCacheFile($filename, true);
 
-        return $this -> checkConditions($cacheFile, $conditions);
+        return $this->checkConditions($cacheFile, $conditions);
     }
 
     /**
@@ -232,7 +232,7 @@ class Cache {
      * @return bool filename exists in the cache and if the conditions are respected
      **/
     public function check($filename, array $conditions = array()) {
-        return $this -> exists($filename, $conditions);
+        return $this->exists($filename, $conditions);
     }
 
     /**
@@ -243,10 +243,10 @@ class Cache {
      * @return Cache instance of Cache object
      */
     public function set($filename, $contents = '') {
-        $cacheFile = $this -> getCacheFile($filename, true, true);
+        $cacheFile = $this->getCacheFile($filename, true, true);
 
         file_put_contents($cacheFile, $contents);
-        chmod($cacheFile, $this -> filemode);
+        chmod($cacheFile, $this->filemode);
         return $this;
     }
 
@@ -258,7 +258,7 @@ class Cache {
      * @return Cache instance of Cache object
      */
     public function write($filename, $contents = '') {
-        return $this -> set($filename, $contents);
+        return $this->set($filename, $contents);
     }
 
     /**
@@ -269,8 +269,8 @@ class Cache {
      * @return content of cache file if exists, else `null`
      */
     public function get($filename, array $conditions = array()) {
-        if ($this -> exists($filename, $conditions)) {
-            return file_get_contents($this -> getCacheFile($filename, true));
+        if ($this->exists($filename, $conditions)) {
+            return file_get_contents($this->getCacheFile($filename, true));
         } else {
             return null;
         }
@@ -290,7 +290,7 @@ class Cache {
      *  ([see chmod man page](http://www.freebsd.org/cgi/man.cgi?query=chmod))
      */
     public function chmod($dirmode, $filemode) {
-        $cacheDirectory = $this -> getActualCacheDirectory();
+        $cacheDirectory = $this->getActualCacheDirectory();
         if (is_dir($cacheDirectory)) {
             $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($cacheDirectory), \RecursiveIteratorIterator::SELF_FIRST);
             foreach ($iterator as $item) {
@@ -324,10 +324,10 @@ class Cache {
      * @return string content or url of cached file
      */
     public function getOrCreate($filename, array $conditions = array(), \Closure $function, $file = false, $actual = false) {
-        $cacheFile = $this -> getCacheFile($filename, true, true);
+        $cacheFile = $this->getCacheFile($filename, true, true);
         $data = null;
 
-        if ($this -> check($filename, $conditions)) {
+        if ($this->check($filename, $conditions)) {
             $data = file_get_contents($cacheFile);
         } else {
             @unlink($cacheFile);
@@ -335,13 +335,13 @@ class Cache {
 
             // Test if the closure wrote the file or if it returned the data
             if (!file_exists($cacheFile)) {
-                $this -> set($filename, $data);
+                $this->set($filename, $data);
             } else {
                 $data = file_get_contents($cacheFile);
             }
         }
 
-        return $file ? $this -> getCacheFile($filename, $actual) : $data;
+        return $file ? $this->getCacheFile($filename, $actual) : $data;
     }
 
     /**
@@ -354,7 +354,7 @@ class Cache {
      * @return string content or url of cached file
      */
     public function getOrCreateFile($filename, array $conditions = array(), \Closure $function, $actual = false) {
-        return $this -> getOrCreate($filename, $conditions, $function, true, $actual);
+        return $this->getOrCreate($filename, $conditions, $function, true, $actual);
     }
 
 }
