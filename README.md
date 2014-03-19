@@ -76,25 +76,46 @@ API
 
 You can use the following methods:
 
-* `setCacheDirectory($directory)`: sets the cache directory (see below).
-* `setActualCacheDirectory($directory)`: sets the actual cache directory (see below).
-* `exists($filename, $conditions = array())`: check that the $filename file exists in the cache, checking
-  the conditions (see below).
-* `check($filename, $conditions = array())`: alias for `exists`.
-* `getCacheFile($filename, $actual = false, $mkdir = false)`: gets the cache file. If the `$actual` flag
-  is true, the actual cache file name will be returned (see below), if the `$mkdir` flag is true, the
-  cache file directories tree will be created.
-* `set($filename, $contents)`: write contents to `$filename` cache file.
-* `write($filename, $contents)`: alias for `set()`
-* `get($filename, $conditions = array())`: if the cache file for `$filename` exists, contents will be
-  returned, else, `NULL` will be returned.
-* `setPrefixSize($prefixSize)`: sets the prefix size for directories, default is 5. For instance, the
-  cache file for `helloworld.txt`, will be `'h/e/l/l/o/helloworld.txt`.
-* `getOrCreate($filename, $conditions = array(), $function, $file = false)`: this will check if the `$filename`
-  cache file exists and verifies `$conditions` (see below). If the cache file is OK, it will return its
-  contents. Else, it will call the `$function`, passing it the target file, this function can write the
-  file given in parameter or just return data. Then, cache data will be returned. If `$file` flag is set,
-  the cache file name will be returned instead of file data.
+*   `setCacheDirectory($directory)`: sets the cache directory (see below).
+
+*   `setActualCacheDirectory($directory)`: sets the actual cache directory (see below).
+
+*   `exists($filename, $conditions = array())`: check that the $filename file exists in the cache, checking
+    the conditions (see below).
+  
+*   `check($filename, $conditions = array())`: alias for `exists`.
+
+*   `getCacheFile($filename, $actual = false, $mkdir = false)`: gets the cache file. If the `$actual` flag
+    is true, the actual cache file name will be returned (see below), if the `$mkdir` flag is true, the
+    cache file directories tree will be created.
+  
+*   `set($filename, $contents)`: write contents to `$filename` cache file.
+
+*   `write($filename, $contents)`: alias for `set()`
+
+*   `get($filename, $conditions = array())`: if the cache file for `$filename` exists, contents will be
+    returned, else, `NULL` will be returned.
+  
+*   `setPrefixSize($prefixSize)`: sets the prefix size for directories, default is 5. For instance, the
+    cache file for `helloworld.txt`, will be `'h/e/l/l/o/helloworld.txt`.
+  
+*   `getOrCreate($filename, $conditions = array(), $function, $file = false)`: this will check if the `$filename`
+    cache file exists and verifies `$conditions` (see below). If the cache file is OK, it will return its
+    contents. Else, it will call the `$function`, passing it the target file, this function can write the
+    file given in parameter or just return data. Then, cache data will be returned. If `$file` flag is set,
+    the cache file name will be returned instead of file data.
+    
+*   `setDefaultDirMode($mode)`: Change default permission mode value of cache directories (default is `0777` 
+    for match with default builtin `mkdir()`). Files already present in cache will not be modified.
+    Use `Cache::chmod()` for modify current cache.
+    
+    You can also use `umask()`. If umask is equal to `0002`, `mkdir("dir",0777)` make a directory
+    with mode equal to `0775`. ([see umask php doc](http://php.net/manual/function.umask.php))
+  
+*   `chmod($dirmode, $filemode)`: Change recursively all cache directories and files permissions.
+    
+    **note**: Prefer `Cache::setDefaultDirMode()` before cache creation.
+    This method will scan the entire cache, therefore may  take time for a large cache.
 
 Note: consider using an hash for the `$filename` cache file, to avoid special characters.
 
