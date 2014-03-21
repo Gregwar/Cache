@@ -246,7 +246,6 @@ class Cache {
         $cacheFile = $this->getCacheFile($filename, true, true);
 
         file_put_contents($cacheFile, $contents);
-        chmod($cacheFile, $this->filemode);
         return $this;
     }
 
