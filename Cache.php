@@ -283,23 +283,37 @@ class Cache {
      * This method will scan the entire cache, therefore may  take time for
      * a large cache.
      *
-     * @param int $dirmode octal number represent directory permissions with unix integer mode format.
+     * @param int $dirmode octal number represent directory permissions with unix integer mode format 
+     *  or `null` for keep current mode
      *  ([see chmod man page](http://www.freebsd.org/cgi/man.cgi?query=chmod))
      * @param int $filemode octal number represent files permissions with unix integer mode format
+     *  or `null` for keep current mode
      *  ([see chmod man page](http://www.freebsd.org/cgi/man.cgi?query=chmod))
+     * @return int return 0 if success or number failures
      */
-    public function chmod($dirmode, $filemode) {
+    public function chmod($dirmode=null, $filemode=null) {
+        $errors = 0;
+        if(is_null($dirmode) && is_null($filemode)){
+            return $errors;
+        }
+        if($dirmode && !is_int($dirmode) || $filemode && !is_int($filemode)){
+            throw new InvalidArgumentException("chmod method require only octal or null arguments", 1);
+        }
         $cacheDirectory = $this->getActualCacheDirectory();
         if (is_dir($cacheDirectory)) {
             $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($cacheDirectory), \RecursiveIteratorIterator::SELF_FIRST);
             foreach ($iterator as $item) {
-                if (is_dir($item)) {
-                    chmod($item, $dirmode);
-                } else {
-                    chmod($item, $filemode);
+                if(basename($item) === "." || basename($item) === ".."){
+                    continue;
                 }
+                $mode = is_dir($item) ? $dirmode : $filemode;
+                if(!$mode){
+                    continue;
+                }
+                $errors = @chmod($item, $mode) ? $errors : $errors+1;
             }
         }
+        return $errors;
     }
 
     /**
