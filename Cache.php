@@ -27,10 +27,22 @@ class Cache {
     /**
      * Permission mode value of cache directories
      *
-     * Default is 0777 for match with default builtin mkdir().
-     * User can use chmod or umask.
+     * If `null`, directory permission will match with default unix
+     * `mkdir` permissions (`777` minus umask).
+     *
+     * User can also use Cache::chmod() or [umask](http://php.net/manual/function.umask.php).
      */
-    protected $dirmode = 0777;
+    protected $dirmode = null;
+
+    /**
+     * Permission mode value of cache files
+     *
+     * If `null`, files permission will match with default unix
+     * files permissions (`666` minus umask).
+     *
+     * User can also use Cache::chmod() or [umask](http://php.net/manual/function.umask.php).
+     */
+    protected $filemode = null;
 
     /**
      * Construct the cache system
@@ -63,7 +75,7 @@ class Cache {
 
     /**
      * Set the actual cache directory
-     * 
+     *
      * @param string $actualCacheDirectory the actual cache directory.
      * @return Cache instance of Cache object.
      */
@@ -74,7 +86,7 @@ class Cache {
 
     /**
      * Get the actual cache directory or default cache if null.
-     * 
+     *
      * @return string the actual cache directory
      */
     public function getActualCacheDirectory() {
@@ -83,7 +95,7 @@ class Cache {
 
     /**
      * Set number of prefix directories.
-     * 
+     *
      * Prevent reaching a too large number of files into the
      * cache system directories
      *
@@ -99,10 +111,13 @@ class Cache {
     }
 
     /**
-     * Change default permission mode value of cache directories (default is 0777 for match with default builtin `mkdir()`).
+     * Change default permission mode value of cache directories.
+     * If `null`, directory permission will match with default unix
+     * `mkdir` permissions (`777` minus umask).
      *
-     * You can also use `umask()`. If umask is equal to 0002, `mkdir("dir",0777)` make a directory
-     * with mode equal to 0775. ([see umask php doc](http://php.net/manual/function.umask.php))
+     * You can also use `umask()`. If umask is equal to `0002`, default permissions will be
+     * `0775` (`0777` minus `0002`).
+     * ([see umask php doc](http://php.net/manual/function.umask.php))
      *
      * **Note**: Files already present in cache will not be modified.
      * Use `Cache::chmod()` for modify current cache.
@@ -110,8 +125,25 @@ class Cache {
      * @param int $mode octal number represent directory permissions with unix integer mode format
      *  ([see chmod man page](http://www.freebsd.org/cgi/man.cgi?query=chmod))
      */
-    public function setDefaultDirMode($mode) {
+    public function setDefaultDirMode($mode=null) {
         $this->dirmode = $mode;
+    }
+
+    /**
+     * Change default permission mode value of cache files.
+     *
+     * You can also use `umask()`. If umask is equal to `0002`, default permissions will be
+     * `0664` (`0666` minus `0002`).
+     * ([see umask php doc](http://php.net/manual/function.umask.php))
+     *
+     * **Note**: Files already present in cache will not be modified.
+     * Use `Cache::chmod()` for modify current cache.
+     *
+     * @param int $mode octal number represent file permissions with unix integer mode format
+     *  ([see chmod man page](http://www.freebsd.org/cgi/man.cgi?query=chmod))
+     */
+    public function setDefaultFileMode($mode=null) {
+        $this->filemode = $mode;
     }
 
     /**
@@ -121,7 +153,7 @@ class Cache {
      */
     protected function mkdir($directory) {
         if (!is_dir($directory)) {
-            @mkdir($directory, $this->dirmode, true);
+            @mkdir($directory, is_null($this->dirmode) ? 0777 : $this->dirmode, true);
         }
     }
 
@@ -148,7 +180,7 @@ class Cache {
 
         $actualDir = $this->getActualCacheDirectory() . '/' . $path;
         if ($mkdir && !is_dir($actualDir)) {
-            mkdir($actualDir, $this->dirmode, true);
+            mkdir($actualDir, is_null($this->dirmode) ? 0777 : $this->dirmode, true);
         }
 
         $path .= '/' . $filename;
@@ -226,7 +258,7 @@ class Cache {
 
     /**
      * Alias for exists
-     * 
+     *
      * @param string $filename the filename
      * @param array $conditions the conditions to respect
      * @return bool filename exists in the cache and if the conditions are respected
@@ -237,21 +269,23 @@ class Cache {
 
     /**
      * Write data in the cache
-     * 
+     *
      * @param string $filename name of file to save in cache
      * @param string $contents content to put in file
      * @return Cache instance of Cache object
      */
     public function set($filename, $contents = '') {
         $cacheFile = $this->getCacheFile($filename, true, true);
-
         file_put_contents($cacheFile, $contents);
+        if($this->filemode){
+            chmod($cacheFile, $this->filemode);
+        }
         return $this;
     }
 
     /**
      * Alias for set()
-     * 
+     *
      * @param string $filename name of file to save in cache
      * @param string $contents content to put in file
      * @return Cache instance of Cache object
@@ -262,7 +296,7 @@ class Cache {
 
     /**
      * Get data from the cache
-     * 
+     *
      * @param string $filename the filename
      * @param array $conditions the conditions to respect
      * @return content of cache file if exists, else `null`
@@ -283,7 +317,7 @@ class Cache {
      * This method will scan the entire cache, therefore may  take time for
      * a large cache.
      *
-     * @param int $dirmode octal number represent directory permissions with unix integer mode format 
+     * @param int $dirmode octal number represent directory permissions with unix integer mode format
      *  or `null` for keep current mode
      *  ([see chmod man page](http://www.freebsd.org/cgi/man.cgi?query=chmod))
      * @param int $filemode octal number represent files permissions with unix integer mode format
@@ -318,9 +352,9 @@ class Cache {
 
     /**
      * Is this URL remote?
-     * 
+     *
      * @param string $file file url
-     * @return bool `TRUE` if file is on remote address, else `FALSE` 
+     * @return bool `TRUE` if file is on remote address, else `FALSE`
      */
     protected function isRemote($file) {
         return preg_match('/^http(s{0,1}):\/\//', $file);
@@ -350,6 +384,9 @@ class Cache {
             if (!file_exists($cacheFile)) {
                 $this->set($filename, $data);
             } else {
+                if($this->filemode){
+                    chmod($cacheFile, $this->filemode);
+                }
                 $data = file_get_contents($cacheFile);
             }
         }
@@ -359,7 +396,7 @@ class Cache {
 
     /**
      * Alias to getOrCreate with $file = true
-     * 
+     *
      * @param string $filename the cache file name
      * @param array $conditions an array of conditions about expiration
      * @param \Closure $function the closure to call if the file does not exists
