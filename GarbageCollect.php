@@ -1,12 +1,14 @@
 <?php
 
+/**
+ * Gregwar Cache package
+ * @author Gregwar <g.passault@gmail.com>
+ */
 namespace Gregwar\Cache;
 
 /**
  * Garbage collect a directory, this will crawl a directory, lookng
  * for files older than X days and destroy them
- *
- * @author Gregwar <g.passault@gmail.com>
  */
 class GarbageCollect
 {
@@ -17,7 +19,7 @@ class GarbageCollect
      * @param int $days the number of days to consider a file old
      * @param bool $verbose enable verbose output
      *
-     * @return true if all the files/directories of a directory was wiped
+     * @return boolean `TRUE` if all the files/directories of a directory was wiped
      */
     public static function dropOldFiles($directory, $days = 30, $verbose = false)
     {
@@ -67,8 +69,8 @@ class GarbageCollect
     /**
      * Drops a file or an empty directory
      *
-     * @param $file the file to be removed
-     * @param $verbose the verbosity
+     * @param string $file the file to be removed
+     * @param bool $verbose the verbosity
      */
     public static function drop($file, $verbose = false)
     {
