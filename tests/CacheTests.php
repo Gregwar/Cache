@@ -2,6 +2,11 @@
 
 use Gregwar\Cache\Cache;
 
+function getFileShortPerms($file)
+{
+    return fileperms($file) & 0777;
+}
+
 /**
  * Unit testing for Cache
  */
@@ -107,6 +112,39 @@ class CacheTests extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('some-data', $data);
     }
+    
+    /**
+     * Testing directories and files permission
+     */
+    public function testPermissions()
+    {
+        $dir = __DIR__;
+        umask(0);
+        $cache = $this->getCache();
+        $file1 = $dir.'/'.$cache->getOrCreateFile('aaa.txt', array(), function() {
+            return 'xyz';
+        });
+        $cache->setDefaultDirMode(0700);
+        $cache->setDefaultFileMode(0600);
+        $file2 = $dir.'/'.$cache->getOrCreateFile('bbb.txt', array(), function() {
+            return 'xyz';
+        });
+        
+        $cacheDir = $this->getCacheDirectory();
+        $this->assertTrue(getFileShortPerms($dir."/".$cacheDir."/a") == 0777);
+        $this->assertTrue(getFileShortPerms($dir."/".$cacheDir."/a/a/a/aaa.txt") == 0666);
+        $this->assertTrue(getFileShortPerms($dir."/".$cacheDir."/b") == 0700);
+        $this->assertTrue(getFileShortPerms($dir."/".$cacheDir."/b/b/b/bbb.txt") == 0600);
+        $this->assertFalse(getFileShortPerms($dir."/".$cacheDir."/b") == 0777);
+        $this->assertFalse(getFileShortPerms($dir."/".$cacheDir."/b/b/b/bbb.txt") == 0666);
+        
+        $cache->chmod(0775,0664);
+        $this->assertTrue(getFileShortPerms($dir."/".$cacheDir."/a") == 0775);
+        $this->assertTrue(getFileShortPerms($dir."/".$cacheDir."/a/a/a/aaa.txt") == 0664);
+        $this->assertTrue(getFileShortPerms($dir."/".$cacheDir."/b") == 0775);
+        $this->assertTrue(getFileShortPerms($dir."/".$cacheDir."/b/b/b/bbb.txt") == 0664);
+        
+    }
 
     protected function getCache()
     {
@@ -128,7 +166,7 @@ class CacheTests extends \PHPUnit_Framework_TestCase
     {
         return 'cache';
     }
-
+    
     public function tearDown()
     {
         $cacheDirectory = $this->getActualCacheDirectory();
