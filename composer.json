@@ -10,6 +10,9 @@
         }
     ],
     "target-dir": "Gregwar/Cache",
+    "require": {
+        "php": ">=5.4"
+    },
     "autoload": {
         "psr-0": {
             "Gregwar\\Cache": ""

@@ -259,7 +259,7 @@ class Cache
      * @param $file returns the cache file or the file contents
      * @param $actual returns the actual cache file
      */
-    public function getOrCreate($filename, array $conditions = array(), \Closure $function, $file = false, $actual = false)
+    public function getOrCreate($filename, array $conditions = array(), callable $function, $file = false, $actual = false)
     {
         $cacheFile = $this->getCacheFile($filename, true, true);
         $data = null;
@@ -268,7 +268,7 @@ class Cache
             $data = file_get_contents($cacheFile);
         } else {
             @unlink($cacheFile);
-            $data = $function($cacheFile);
+            $data = call_user_func($function, $cacheFile);
 
             // Test if the closure wrote the file or if it returned the data
             if (!file_exists($cacheFile)) {
@@ -284,7 +284,7 @@ class Cache
     /**
      * Alias to getOrCreate with $file = true
      */
-    public function getOrCreateFile($filename, array $conditions = array(), \Closure $function, $actual = false)
+    public function getOrCreateFile($filename, array $conditions = array(), callable $function, $actual = false)
     {
         return $this->getOrCreate($filename, $conditions, $function, true, $actual);
     }

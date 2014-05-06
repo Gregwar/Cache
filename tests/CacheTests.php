@@ -77,6 +77,21 @@ class CacheTests extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Testing the getOrCreate function with a callable
+     */
+    public function testGetOrCreateWithCallable()
+    {
+        $cache = $this->getCache();
+
+        $this->assertFalse($cache->exists('testing.txt'));
+
+        $data = $cache->getOrCreate('testing.txt', array(), array($this, 'getAnimal'));
+
+        $this->assertTrue($cache->exists('testing.txt'));
+        $this->assertEquals('orangutan', $data);
+    }
+
+    /**
      * Testing the getOrCreate function with $file=true
      */
     public function testGetOrCreateFile()
@@ -106,6 +121,11 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         });
 
         $this->assertEquals('some-data', $data);
+    }
+
+    public function getAnimal()
+    {
+        return 'orangutan';
     }
 
     protected function getCache()
