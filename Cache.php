@@ -259,8 +259,12 @@ class Cache
      * @param $file returns the cache file or the file contents
      * @param $actual returns the actual cache file
      */
-    public function getOrCreate($filename, array $conditions = array(), callable $function, $file = false, $actual = false)
+    public function getOrCreate($filename, array $conditions = array(), $function, $file = false, $actual = false)
     {
+        if (!is_callable($function)) {
+            throw new InvalidArgumentException('The argument $function should be callable');
+        }
+
         $cacheFile = $this->getCacheFile($filename, true, true);
         $data = null;
 
@@ -284,7 +288,7 @@ class Cache
     /**
      * Alias to getOrCreate with $file = true
      */
-    public function getOrCreateFile($filename, array $conditions = array(), callable $function, $actual = false)
+    public function getOrCreateFile($filename, array $conditions = array(), $function, $actual = false)
     {
         return $this->getOrCreate($filename, $conditions, $function, true, $actual);
     }
