@@ -100,7 +100,7 @@ class Cache
     /**
      * Change the directory mode
      *
-     * @param $prefixSize the size of the prefix directories
+     * @param $directoryMode the directory mode to use
      */
     public function setDirectoryMode($directoryMode)
     {
