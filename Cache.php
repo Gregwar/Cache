@@ -31,6 +31,13 @@ class Cache
     protected $prefixSize = 5;
 
     /**
+     * Directory mode
+     *
+     * Allows setting of the access mode for the directories created.
+     */
+    protected $directoryMode = 0755;
+
+    /**
      * Constructs the cache system
      */
     public function __construct($cacheDirectory = 'cache')
@@ -91,6 +98,21 @@ class Cache
     }
 
     /**
+     * Change the directory mode
+     *
+     * @param $directoryMode the directory mode to use
+     */
+    public function setDirectoryMode($directoryMode)
+    {
+        if (!$directoryMode) {
+            $directoryMode = 0755;
+        }
+        $this->directoryMode = $directoryMode;
+
+        return $this;
+    }
+
+    /**
      * Creates a directory
      *
      * @param $directory, the target directory
@@ -98,7 +120,7 @@ class Cache
     protected function mkdir($directory)
     {
         if (!is_dir($directory)) {
-            @mkdir($directory, 0755, true);
+            @mkdir($directory, $this->directoryMode, true);
         }
     }
 
@@ -126,7 +148,7 @@ class Cache
 
         $actualDir = $this->getActualCacheDirectory() . '/' . $path;
         if ($mkdir && !is_dir($actualDir)) {
-            mkdir($actualDir, 0755, true);
+            mkdir($actualDir, $this->directoryMode, true);
         }
 
         $path .= '/' . $filename;
