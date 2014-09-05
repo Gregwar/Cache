@@ -1,6 +1,8 @@
 Cache
 =====
 
+![Build status](https://travis-ci.org/Gregwar/Cache.svg?branch=master)
+
 This is a lightweight cache system based on file and directories.
 
 Usage
