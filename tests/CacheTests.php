@@ -123,6 +123,33 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         $this->assertEquals('some-data', $data);
     }
 
+    /**
+     * Testing that directory mode works
+     */
+    public function testDirectoryMode()
+    {
+        $dir = __DIR__;
+        $cache = $this->getCache();
+        $cacheDir = $this->getCacheDirectory();
+
+        // default permissions are 0755
+        $data = $cache->getOrCreate('aaa.txt', array(), function () {
+            return 'abc';
+        });
+        $this->assertTrue((fileperms("$dir/$cacheDir/a") & 0777) == 0755);
+        $this->assertTrue((fileperms("$dir/$cacheDir/a/a") & 0777) == 0755);
+        $this->assertTrue((fileperms("$dir/$cacheDir/a/a/a") & 0777) == 0755);
+
+        // Change permissions to be more restrictive
+        $cache->setDirectoryMode(0700);
+        $data = $cache->getOrCreate('bbb.txt', array(), function () {
+            return 'abc';
+        });
+        $this->assertTrue((fileperms("$dir/$cacheDir/b") & 0777) == 0700);
+        $this->assertTrue((fileperms("$dir/$cacheDir/b/b") & 0777) == 0700);
+        $this->assertTrue((fileperms("$dir/$cacheDir/b/b/b") & 0777) == 0700);
+    }
+
     public function getAnimal()
     {
         return 'orangutan';
