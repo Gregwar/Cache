@@ -293,8 +293,7 @@ class Cache
         if ($this->check($filename, $conditions)) {
             $data = file_get_contents($cacheFile);
         } else {
-            if(file_exists($cacheFile))
-            {
+            if(file_exists($cacheFile)) {
                 unlink($cacheFile);
             }
 
