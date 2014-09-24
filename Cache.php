@@ -293,7 +293,10 @@ class Cache
         if ($this->check($filename, $conditions)) {
             $data = file_get_contents($cacheFile);
         } else {
-            @unlink($cacheFile);
+            if(file_exists($cacheFile)) {
+                unlink($cacheFile);
+            }
+
             $data = call_user_func($function, $cacheFile);
 
             // Test if the closure wrote the file or if it returned the data
