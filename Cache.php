@@ -269,7 +269,11 @@ class Cache
      */
     protected function isRemote($file)
     {
-        return preg_match('/^http(s{0,1}):\/\//', $file);
+        if (preg_match('/^([a-z]+):\/\//', $file, $match)) {
+            return ($match[1] != 'file');
+        }
+
+        return false;
     }
 
     /**

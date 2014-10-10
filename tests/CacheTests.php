@@ -91,6 +91,11 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         $this->assertEquals('orangutan', $data);
     }
 
+    public function getAnimal()
+    {
+        return 'orangutan';
+    }
+
     /**
      * Testing the getOrCreate function with $file=true
      */
@@ -150,9 +155,21 @@ class CacheTests extends \PHPUnit_Framework_TestCase
         $this->assertTrue((fileperms("$dir/$cacheDir/b/b/b") & 0777) == 0700);
     }
 
-    public function getAnimal()
+    /**
+     * Testing that remotes does not cause cache regeneration
+     */
+    public function testRemote()
     {
-        return 'orangutan';
+        $cache = $this->getCache();
+        $cache->set('remote', 'original');
+
+        $data = $cache->getOrCreate('remote', array('younger-than' => 'http://google.com'), function() {
+            return 'modified';
+        });
+        $data = $cache->getOrCreate('remote', array('younger-than' => 'ftps://google.com'), function() {
+            return 'modified';
+        });
+        $this->assertEquals('original', $data);
     }
 
     protected function getCache()
