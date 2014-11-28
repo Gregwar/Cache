@@ -239,7 +239,7 @@ class Cache
     {
         $cacheFile = $this->getCacheFile($filename, true, true);
 
-        file_put_contents($cacheFile, $contents);
+        file_put_contents($cacheFile, serialize($contents));
 
         return $this;
     }
@@ -258,7 +258,7 @@ class Cache
     public function get($filename, array $conditions = array())
     {
         if ($this->exists($filename, $conditions)) {
-            return file_get_contents($this->getCacheFile($filename, true));
+            return unserialize(file_get_contents($this->getCacheFile($filename, true)));
         } else {
             return null;
         }
@@ -295,7 +295,7 @@ class Cache
         $data = null;
 
         if ($this->check($filename, $conditions)) {
-            $data = file_get_contents($cacheFile);
+            $data = unserialize(file_get_contents($cacheFile));
         } else {
             if(file_exists($cacheFile)) {
                 unlink($cacheFile);
@@ -307,7 +307,7 @@ class Cache
             if (!file_exists($cacheFile)) {
                 $this->set($filename, $data);
             } else {
-                $data = file_get_contents($cacheFile);
+                $data = unserialize(file_get_contents($cacheFile));
             }
         }
 
