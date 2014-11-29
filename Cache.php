@@ -127,10 +127,12 @@ class Cache
     /**
      * Gets the cache file name
      *
-     * @param $filename, the name of the cache file
-     * @param $actual get the actual file or the public file
-     * @param $mkdir, a boolean to enable/disable the construction of the
+     * @param $filename String, the name of the cache file
+     * @param $actual Boolean get the actual file or the public file
+     * @param $mkdir Boolean, a boolean to enable/disable the construction of the
      *        cache file directory
+     *
+     * @return String
      */
     public function getCacheFile($filename, $actual = false, $mkdir = false)
     {
@@ -162,8 +164,8 @@ class Cache
     /**
      * Checks that the cache conditions are respected
      *
-     * @param $cacheFile the cache file
-     * @param $conditions an array of conditions to check
+     * @param $cacheFile String     the cache file
+     * @param $conditions[]         an array of conditions to check
      */
     protected function checkConditions($cacheFile, array $conditions = array())
     {
