@@ -162,8 +162,8 @@ class Cache
     /**
      * Checks that the cache conditions are respected
      *
-     * @param $cacheFile the cache file
-     * @param $conditions an array of conditions to check
+     * @param $cacheFile String     the cache file
+     * @param $conditions[]         an array of conditions to check
      */
     protected function checkConditions($cacheFile, array $conditions = array())
     {
