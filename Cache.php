@@ -280,11 +280,14 @@ class Cache
     /**
      * Get or create the cache entry
      *
-     * @param $filename the cache file name
-     * @param $conditions an array of conditions about expiration
-     * @param $function the closure to call if the file does not exists
-     * @param $file returns the cache file or the file contents
-     * @param $actual returns the actual cache file
+     * @param $filename String the cache file name
+     * @param $conditions[] an array of conditions about expiration
+     * @param $function Callable the closure to call if the file does not exists
+     * @param $file Boolean returns the cache file or the file contents
+     * @param $actual Boolean returns the actual cache file
+     *
+     * @return mixed
+     * @throws InvalidArgumentException
      */
     public function getOrCreate($filename, array $conditions = array(), $function, $file = false, $actual = false)
     {
