@@ -137,11 +137,10 @@ class Cache
         $path = array();
 
         // Getting the length of the filename before the extension
-        $parts = explode('.', $filename);
-        $len = strlen($parts[0]);
+        $hashedFilename = md5($filename);
 
-        for ($i=0; $i<min($len, $this->prefixSize); $i++) {
-            $path[] = $filename[$i];
+        for ($i=0; $i<$this->prefixSize; $i++) {
+            $path[] = $hashedFilename[$i];
 
         }
         $path = implode('/', $path);
@@ -151,7 +150,7 @@ class Cache
             mkdir($actualDir, $this->directoryMode, true);
         }
 
-        $path .= '/' . $filename;
+        $path .= '/' . $hashedFilename;
 
         if ($actual) {
             return $this->getActualCacheDirectory() . '/' . $path;
