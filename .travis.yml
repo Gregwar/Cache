@@ -9,4 +9,6 @@ php:
 
 script:
     - composer install
+    - mkdir tests/cache
+    - chmod 777 tests/cache
     - phpunit
