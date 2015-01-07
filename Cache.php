@@ -127,21 +127,22 @@ class Cache
     /**
      * Gets the cache file name
      *
-     * @param $filename, the name of the cache file
-     * @param $actual get the actual file or the public file
-     * @param $mkdir, a boolean to enable/disable the construction of the
+     * @param $filename String, the name of the cache file
+     * @param $actual Boolean get the actual file or the public file
+     * @param $mkdir Boolean, a boolean to enable/disable the construction of the
      *        cache file directory
+     *
+     * @return String
      */
     public function getCacheFile($filename, $actual = false, $mkdir = false)
     {
         $path = array();
 
         // Getting the length of the filename before the extension
-        $parts = explode('.', $filename);
-        $len = strlen($parts[0]);
+        $hashedFilename = md5($filename);
 
-        for ($i=0; $i<min($len, $this->prefixSize); $i++) {
-            $path[] = $filename[$i];
+        for ($i=0; $i<$this->prefixSize; $i++) {
+            $path[] = $hashedFilename[$i];
 
         }
         $path = implode('/', $path);
@@ -151,7 +152,7 @@ class Cache
             mkdir($actualDir, $this->directoryMode, true);
         }
 
-        $path .= '/' . $filename;
+        $path .= '/' . $hashedFilename;
 
         if ($actual) {
             return $this->getActualCacheDirectory() . '/' . $path;
@@ -163,8 +164,8 @@ class Cache
     /**
      * Checks that the cache conditions are respected
      *
-     * @param $cacheFile the cache file
-     * @param $conditions an array of conditions to check
+     * @param $cacheFile String     the cache file
+     * @param $conditions[]         an array of conditions to check
      */
     protected function checkConditions($cacheFile, array $conditions = array())
     {
@@ -239,7 +240,7 @@ class Cache
     {
         $cacheFile = $this->getCacheFile($filename, true, true);
 
-        file_put_contents($cacheFile, $contents);
+        file_put_contents($cacheFile, serialize($contents));
 
         return $this;
     }
@@ -258,7 +259,7 @@ class Cache
     public function get($filename, array $conditions = array())
     {
         if ($this->exists($filename, $conditions)) {
-            return file_get_contents($this->getCacheFile($filename, true));
+            return unserialize(file_get_contents($this->getCacheFile($filename, true)));
         } else {
             return null;
         }
@@ -279,11 +280,14 @@ class Cache
     /**
      * Get or create the cache entry
      *
-     * @param $filename the cache file name
-     * @param $conditions an array of conditions about expiration
-     * @param $function the closure to call if the file does not exists
-     * @param $file returns the cache file or the file contents
-     * @param $actual returns the actual cache file
+     * @param $filename String the cache file name
+     * @param $conditions[] an array of conditions about expiration
+     * @param $function Callable the closure to call if the file does not exists
+     * @param $file Boolean returns the cache file or the file contents
+     * @param $actual Boolean returns the actual cache file
+     *
+     * @return mixed
+     * @throws InvalidArgumentException
      */
     public function getOrCreate($filename, array $conditions = array(), $function, $file = false, $actual = false)
     {
@@ -295,7 +299,7 @@ class Cache
         $data = null;
 
         if ($this->check($filename, $conditions)) {
-            $data = file_get_contents($cacheFile);
+            $data = unserialize(file_get_contents($cacheFile));
         } else {
             if(file_exists($cacheFile)) {
                 unlink($cacheFile);
@@ -307,7 +311,7 @@ class Cache
             if (!file_exists($cacheFile)) {
                 $this->set($filename, $data);
             } else {
-                $data = file_get_contents($cacheFile);
+                $data = unserialize(file_get_contents($cacheFile));
             }
         }
 
