@@ -16,6 +16,7 @@ class Cache
 
     /**
      * Use a different directory as actual cache
+     * @var string
      */
     protected $actualCacheDirectory = null;
 
@@ -25,8 +26,9 @@ class Cache
      * For instance, if the file is helloworld.txt and the prefix size is
      * 5, the cache file will be: h/e/l/l/o/helloworld.txt
      *
-     * This is useful to avoid reaching a too large number of files into the 
+     * This is useful to avoid reaching a too large number of files into the
      * cache system directories
+     * @var int
      */
     protected $prefixSize = 5;
 
@@ -34,11 +36,14 @@ class Cache
      * Directory mode
      *
      * Allows setting of the access mode for the directories created.
+     * @var int
      */
     protected $directoryMode = 0755;
 
     /**
      * Constructs the cache system
+     *
+     * @param string $cacheDirectory the cache directory
      */
     public function __construct($cacheDirectory = 'cache')
     {
@@ -48,7 +53,8 @@ class Cache
     /**
      * Sets the cache directory
      *
-     * @param $cacheDirectory the cache directory
+     * @param string $cacheDirectory the cache directory
+     * @return self
      */
     public function setCacheDirectory($cacheDirectory)
     {
@@ -69,6 +75,9 @@ class Cache
 
     /**
      * Sets the actual cache directory
+     *
+     * @param string $actualCacheDirectory the actual cache directory
+     * @return self
      */
     public function setActualCacheDirectory($actualCacheDirectory = null)
     {
@@ -88,7 +97,8 @@ class Cache
     /**
      * Change the prefix size
      *
-     * @param $prefixSize the size of the prefix directories
+     * @param int $prefixSize the size of the prefix directories
+     * @return self
      */
     public function setPrefixSize($prefixSize)
     {
@@ -100,7 +110,8 @@ class Cache
     /**
      * Change the directory mode
      *
-     * @param $directoryMode the directory mode to use
+     * @param int $directoryMode the directory mode to use
+     * @return self
      */
     public function setDirectoryMode($directoryMode)
     {
@@ -115,7 +126,7 @@ class Cache
     /**
      * Creates a directory
      *
-     * @param $directory, the target directory
+     * @param string $directory the target directory
      */
     protected function mkdir($directory)
     {
@@ -127,10 +138,11 @@ class Cache
     /**
      * Gets the cache file name
      *
-     * @param $filename, the name of the cache file
-     * @param $actual get the actual file or the public file
-     * @param $mkdir, a boolean to enable/disable the construction of the
+     * @param string $filename the name of the cache file
+     * @param bool $actual get the actual file or the public file
+     * @param bool $mkdir a boolean to enable/disable the construction of the
      *        cache file directory
+     * @return string
      */
     public function getCacheFile($filename, $actual = false, $mkdir = false)
     {
@@ -163,8 +175,10 @@ class Cache
     /**
      * Checks that the cache conditions are respected
      *
-     * @param $cacheFile the cache file
-     * @param $conditions an array of conditions to check
+     * @param string $cacheFile the cache file
+     * @param array $conditions an array of conditions to check
+     * @return bool
+     * @throws \Exception
      */
     protected function checkConditions($cacheFile, array $conditions = array())
     {
@@ -211,11 +225,12 @@ class Cache
     }
 
     /**
-     * Checks if the targt filename exists in the cache and if the conditions
+     * Checks if the target filename exists in the cache and if the conditions
      * are respected
      *
-     * @param $filename the filename 
-     * @param $conditions the conditions to respect
+     * @param string $filename the filename
+     * @param array $conditions the conditions to respect
+     * @return bool
      */
     public function exists($filename, array $conditions = array())
     {
@@ -226,6 +241,10 @@ class Cache
 
     /**
      * Alias for exists
+     *
+     * @param string $filename the filename
+     * @param array $conditions the conditions to respect
+     * @return bool
      */
     public function check($filename, array $conditions = array())
     {
@@ -234,6 +253,10 @@ class Cache
 
     /**
      * Write data in the cache
+     *
+     * @param string $filename the name of the cache file
+     * @param string $contents the contents to store
+     * @return self
      */
     public function set($filename, $contents = '')
     {
@@ -246,6 +269,10 @@ class Cache
 
     /**
      * Alias for set()
+     *
+     * @param string $filename the name of the cache file
+     * @param string $contents the contents to store
+     * @return self
      */
     public function write($filename, $contents = '')
     {
@@ -254,6 +281,10 @@ class Cache
 
     /**
      * Get data from the cache
+     *
+     * @param string $filename the cache file name
+     * @param array $conditions
+     * @return null|string
      */
     public function get($filename, array $conditions = array())
     {
@@ -266,6 +297,9 @@ class Cache
 
     /**
      * Is this URL remote?
+     *
+     * @param string $file
+     * @return bool
      */
     protected function isRemote($file)
     {
@@ -279,16 +313,18 @@ class Cache
     /**
      * Get or create the cache entry
      *
-     * @param $filename the cache file name
-     * @param $conditions an array of conditions about expiration
-     * @param $function the closure to call if the file does not exists
-     * @param $file returns the cache file or the file contents
-     * @param $actual returns the actual cache file
+     * @param string $filename the cache file name
+     * @param array $conditions an array of conditions about expiration
+     * @param \Closure $function the closure to call if the file does not exist
+     * @param bool $file returns the cache file or the file contents
+     * @param bool $actual returns the actual cache file
+     * @return string
+     * @throws \InvalidArgumentException
      */
     public function getOrCreate($filename, array $conditions = array(), $function, $file = false, $actual = false)
     {
         if (!is_callable($function)) {
-            throw new InvalidArgumentException('The argument $function should be callable');
+            throw new \InvalidArgumentException('The argument $function should be callable');
         }
 
         $cacheFile = $this->getCacheFile($filename, true, true);
@@ -316,6 +352,13 @@ class Cache
 
     /**
      * Alias to getOrCreate with $file = true
+     *
+     * @param string $filename the cache file name
+     * @param array $conditions an array of conditions about expiration
+     * @param \Closure $function the closure to call if the file does not exist
+     * @param bool $actual returns the actual cache file
+     * @return string
+     * @throws \InvalidArgumentException
      */
     public function getOrCreateFile($filename, array $conditions = array(), $function, $actual = false)
     {
