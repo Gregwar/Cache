@@ -330,9 +330,7 @@ class Cache
         $cacheFile = $this->getCacheFile($filename, true, true);
         $data = null;
 
-        if ($this->check($filename, $conditions)) {
-            $data = file_get_contents($cacheFile);
-        } else {
+        if (!$this->check($filename, $conditions)) {
             if(file_exists($cacheFile)) {
                 unlink($cacheFile);
             }
@@ -347,7 +345,7 @@ class Cache
             }
         }
 
-        return $file ? $this->getCacheFile($filename, $actual) : $data;
+        return $file ? $this->getCacheFile($filename, $actual) : file_get_contents($cacheFile);
     }
 
     /**
