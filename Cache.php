@@ -201,7 +201,7 @@ class Cache
             case 'youngerthan':
                 // Return false if the file is older than the file $value, or the files $value
                 $check = function($filename) use ($cacheFile) {
-                    return !file_exists($filename) || filectime($cacheFile) < filectime($filename);
+                    return !file_exists($filename) || filemtime($cacheFile) < filemtime($filename);
                 };
 
                 if (!is_array($value)) {
