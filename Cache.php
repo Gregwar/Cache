@@ -7,7 +7,7 @@ namespace Gregwar\Cache;
  *
  * @author Gregwar <g.passault@gmail.com>
  */
-class Cache
+class Cache implements CacheInterface
 {
     /**
      * Cache directory
