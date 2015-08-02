@@ -7,6 +7,13 @@ use Gregwar\Cache\Cache;
  */
 class CacheTests extends \PHPUnit_Framework_TestCase
 {
+
+    public function testContract()
+    {
+        $cache = $this->getCache();
+        $this->assertInstanceOf('Gregwar\Cache\CacheInterface', $cache);
+    }
+
     /**
      * Testing that file names are good
      */
