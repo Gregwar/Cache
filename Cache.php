@@ -192,7 +192,7 @@ class Cache implements CacheInterface
             case 'maxage':
             case 'max-age':
                 // Return false if the file is older than $value
-                $age = time() - filectime($cacheFile);
+                $age = time() - filemtime($cacheFile);
                 if ($age > $value) {
                     return false;
                 }
