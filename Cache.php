@@ -147,6 +147,7 @@ class Cache implements CacheInterface
     public function getCacheFile($filename, $actual = false, $mkdir = false)
     {
         $path = array();
+        $pathConcat = '';
 
         // Getting the length of the filename before the extension
         $parts = explode('.', $filename);
@@ -154,16 +155,16 @@ class Cache implements CacheInterface
 
         for ($i=0; $i<min($len, $this->prefixSize); $i++) {
             $path[] = $filename[$i];
+            $pathConcat .= $filename[$i] . '/';
 
+            // Create dir for each sub level, to avoid mkdir() "file exists" error
+            $actualDir = $this->getActualCacheDirectory() . '/' . $pathConcat;
+            if ($mkdir && !is_dir($actualDir)) {
+                mkdir($actualDir, $this->directoryMode, true);
+            }
         }
-        $path = implode('/', $path);
 
-        $actualDir = $this->getActualCacheDirectory() . '/' . $path;
-        if ($mkdir && !is_dir($actualDir)) {
-            mkdir($actualDir, $this->directoryMode, true);
-        }
-
-        $path .= '/' . $filename;
+        $path = implode('/', $path) . '/' . $filename;
 
         if ($actual) {
             return $this->getActualCacheDirectory() . '/' . $path;
