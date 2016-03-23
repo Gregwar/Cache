@@ -36,11 +36,11 @@ Step 2: Setup the rights
 ------------------------
 
 You need your PHP script to have access to the cache directory, you can for instance
-create a `cache` directory with mode 777:
+create a `cache` directory with mode 755:
 
 ```
 mkdir cache
-chmod 777 cache
+chmod 755 cache
 ```
 
 Step 3: Access the cache
