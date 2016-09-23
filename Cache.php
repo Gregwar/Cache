@@ -262,7 +262,7 @@ class Cache implements CacheInterface
     {
         $cacheFile = $this->getCacheFile($filename, true, true);
 
-        file_put_contents($cacheFile, $contents);
+        file_put_contents($cacheFile, $contents, \LOCK_EX);
 
         return $this;
     }
