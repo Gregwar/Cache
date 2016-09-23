@@ -158,9 +158,9 @@ class Cache implements CacheInterface
         }
         $path = implode('/', $path);
 
-        $actualDir = $this->getActualCacheDirectory() . '/' . $path;
-        if ($mkdir && !is_dir($actualDir)) {
-            mkdir($actualDir, $this->directoryMode, true);
+        if ($mkdir) {
+            $actualDir = $this->getActualCacheDirectory() . '/' . $path;
+            $this->mkdir($actualDir);
         }
 
         $path .= '/' . $filename;
