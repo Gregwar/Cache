@@ -315,14 +315,19 @@ class Cache implements CacheInterface
      *
      * @param string $filename the cache file name
      * @param array $conditions an array of conditions about expiration
-     * @param \Closure $function the closure to call if the file does not exist
+     * @param \Closure|null $function the closure to call if the file does not exist
      * @param bool $file returns the cache file or the file contents
      * @param bool $actual returns the actual cache file
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function getOrCreate($filename, array $conditions = array(), $function, $file = false, $actual = false)
-    {
+    public function getOrCreate(
+        $filename,
+        array $conditions = array(),
+        $function = null,
+        $file = false,
+        $actual = false
+    ) {
         if (!is_callable($function)) {
             throw new \InvalidArgumentException('The argument $function should be callable');
         }
@@ -353,12 +358,12 @@ class Cache implements CacheInterface
      *
      * @param string $filename the cache file name
      * @param array $conditions an array of conditions about expiration
-     * @param \Closure $function the closure to call if the file does not exist
+     * @param \Closure|null $function the closure to call if the file does not exist
      * @param bool $actual returns the actual cache file
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function getOrCreateFile($filename, array $conditions = array(), $function, $actual = false)
+    public function getOrCreateFile($filename, array $conditions = array(), $function = null, $actual = false)
     {
         return $this->getOrCreate($filename, $conditions, $function, true, $actual);
     }
