@@ -358,7 +358,7 @@ class Cache implements CacheInterface
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function getOrCreateFile($filename, array $conditions = array(), $function, $actual = false)
+    public function getOrCreateFile($filename, array $conditions, $function, $actual = false)
     {
         return $this->getOrCreate($filename, $conditions, $function, true, $actual);
     }
