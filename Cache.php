@@ -11,14 +11,15 @@ class Cache implements CacheInterface
 {
     /**
      * Cache directory
+     * @var string
      */
     protected $cacheDirectory;
 
     /**
      * Use a different directory as actual cache
-     * @var string
+     * @var string|null
      */
-    protected $actualCacheDirectory = null;
+    protected $actualCacheDirectory;
 
     /**
      * Prefix directories size
@@ -76,7 +77,7 @@ class Cache implements CacheInterface
     /**
      * Sets the actual cache directory
      *
-     * @param string $actualCacheDirectory the actual cache directory
+     * @param string|null $actualCacheDirectory the actual cache directory
      * @return self
      */
     public function setActualCacheDirectory($actualCacheDirectory = null)

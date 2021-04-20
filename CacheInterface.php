@@ -20,7 +20,7 @@ interface CacheInterface {
     /**
      * Sets the actual cache directory
      *
-     * @param string $actualCacheDirectory the actual cache directory
+     * @param string|null $actualCacheDirectory the actual cache directory
      * @return self
      */
     public function setActualCacheDirectory($actualCacheDirectory = null);
