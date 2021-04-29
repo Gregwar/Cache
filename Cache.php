@@ -147,6 +147,44 @@ class Cache implements CacheInterface
      */
     public function getCacheFile($filename, $actual = false, $mkdir = false)
     {
+        return $this->getFullPath($this->buildPath($filename), $filename, $actual, $mkdir);
+    }
+
+    /**
+     * Get the full path to the cache file.
+     *
+     * @param  string $path
+     * @param  string $filename
+     * @param  bool $actual
+     * @param  bool   $mkdir
+     * @return string
+     */
+    protected function getFullPath($path, $filename, $actual, $mkdir = false)
+    {
+        $actualDir = $this->getActualCacheDirectory() . '/' . $path;
+        if ($mkdir) {
+            $this->mkdir($actualDir, $this->directoryMode, true);
+        }
+
+        $path .= '/' . $filename;
+
+        if ($actual) {
+            return $this->getActualCacheDirectory() . '/' . $path;
+        } else {
+            return $this->getCacheDirectory() . '/' . $path;
+        }
+
+        return $path;
+    }
+
+    /**
+     * Build the path for the given filename.
+     *
+     * @param  string $filename
+     * @return string
+     */
+    protected function buildPath($filename)
+    {
         $path = array();
 
         // Getting the length of the filename before the extension
@@ -159,18 +197,7 @@ class Cache implements CacheInterface
         }
         $path = implode('/', $path);
 
-        if ($mkdir) {
-            $actualDir = $this->getActualCacheDirectory() . '/' . $path;
-            $this->mkdir($actualDir);
-        }
-
-        $path .= '/' . $filename;
-
-        if ($actual) {
-            return $this->getActualCacheDirectory() . '/' . $path;
-        } else {
-            return $this->getCacheDirectory() . '/' . $path;
-        }
+        return $path;
     }
 
     /**
@@ -261,11 +288,20 @@ class Cache implements CacheInterface
      */
     public function set($filename, $contents = '')
     {
-        $cacheFile = $this->getCacheFile($filename, true, true);
-
-        file_put_contents($cacheFile, $contents, \LOCK_EX);
+        $this->setAbsolute($this->getCacheFile($filename, true, true), $contents);
 
         return $this;
+    }
+
+    /**
+     * Write data to the given absolute file path.
+     *
+     * @param string $cacheFile
+     * @param string $contents
+     */
+    protected function setAbsolute($cacheFile, $contents = '')
+    {
+        file_put_contents($cacheFile, $contents, \LOCK_EX);
     }
 
     /**
@@ -328,10 +364,11 @@ class Cache implements CacheInterface
             throw new \InvalidArgumentException('The argument $function should be callable');
         }
 
-        $cacheFile = $this->getCacheFile($filename, true, true);
+        $path = $this->buildPath($filename);
+        $cacheFile = $this->getFullPath($path, $filename, true, true);
         $data = null;
 
-        if (!$this->check($filename, $conditions)) {
+        if (!$this->checkConditions($cacheFile, $conditions)) {
             if(file_exists($cacheFile)) {
                 unlink($cacheFile);
             }
@@ -340,13 +377,13 @@ class Cache implements CacheInterface
 
             // Test if the closure wrote the file or if it returned the data
             if (!file_exists($cacheFile)) {
-                $this->set($filename, $data);
+                $this->setAbsolute($cacheFile, $data);
             } else {
                 $data = file_get_contents($cacheFile);
             }
         }
 
-        return $file ? $this->getCacheFile($filename, $actual) : file_get_contents($cacheFile);
+        return $file ? $this->getFullPath($path, $filename, $actual) : file_get_contents($cacheFile);
     }
 
     /**
